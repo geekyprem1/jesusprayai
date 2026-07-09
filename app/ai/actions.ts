@@ -231,5 +231,47 @@ export async function saveEntryVerse(
   }
 
   revalidatePath("/app/journal");
+  revalidatePath("/app/verses");
   return { ok: true, data: null };
+}
+
+export type SavedVerseRow = EntryVerseRow & {
+  prayer_entries?:
+    | {
+        id: string;
+        created_at: string;
+        body_plain: string;
+      }
+    | {
+        id: string;
+        created_at: string;
+        body_plain: string;
+      }[]
+    | null;
+};
+
+/** All verses the user bookmarked (saved = true). */
+export async function listSavedVerses(): Promise<
+  AiActionResult<SavedVerseRow[]>
+> {
+  const auth = await requireUser();
+  if ("errorMessage" in auth) {
+    return { ok: false, error: auth.errorMessage };
+  }
+  const { supabase, user } = auth;
+
+  const { data, error } = await supabase
+    .from("prayer_entry_verses")
+    .select(
+      "id, entry_id, reference, translation, verse_text, relevance_score, reason, saved, created_at, prayer_entries ( id, created_at, body_plain )"
+    )
+    .eq("user_id", user.id)
+    .eq("saved", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  return { ok: true, data: (data ?? []) as SavedVerseRow[] };
 }

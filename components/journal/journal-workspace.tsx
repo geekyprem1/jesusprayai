@@ -38,6 +38,7 @@ import {
 } from "@/lib/journal/local-store";
 import type { JournalEntryView, PrayerCategory } from "@/types/journal";
 import { CATEGORIES } from "@/lib/ai/schemas";
+import { VoicePrayerButton } from "@/components/journal/voice-prayer-button";
 
 function formatDate(iso: string) {
   try {
@@ -373,9 +374,9 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_280px]">
-      {/* On mobile: editor first; recent list second. Tablet+: side-by-side from lg */}
-      <div className="order-1 flex min-w-0 flex-col gap-4">
+    /* Main column = entry (wide). Side column = recent (narrow). DOM order must match. */
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_240px] lg:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="flex min-w-0 flex-col gap-4">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
           {online ? (
             <span className="inline-flex items-center gap-1">
@@ -407,17 +408,26 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder="Write your prayer here…"
+              placeholder="Write or speak your prayer here…"
               rows={8}
               className="min-h-[160px] w-full resize-y rounded-lg border border-input bg-transparent px-3 py-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:min-h-[200px] sm:text-sm"
             />
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-muted-foreground order-2 sm:order-1">
-                Voice STT coming later.
-              </p>
+            <VoicePrayerButton
+              disabled={saving}
+              onTranscript={(text) => {
+                setBody((prev) => {
+                  const next = prev.trim()
+                    ? `${prev.trim()}\n\n${text}`
+                    : text;
+                  return next;
+                });
+                setStatus("Voice added to your prayer. Edit if needed, then Save.");
+              }}
+            />
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
               <Button
                 type="button"
-                className="w-full sm:w-auto order-1 sm:order-2"
+                className="w-full sm:w-auto"
                 onClick={() => void handleSave()}
                 disabled={!body.trim() || saving}
               >
@@ -538,7 +548,8 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
         )}
       </div>
 
-      <div className="order-2 flex min-w-0 flex-col gap-2 lg:order-none">
+      {/* Sidebar: recent list — always second so it stays the narrow column */}
+      <aside className="flex min-w-0 flex-col gap-2 md:max-w-[280px]">
         <h2 className="text-sm font-medium text-muted-foreground">
           Recent ({entries.length})
         </h2>
@@ -550,12 +561,9 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
             No entries yet. Write your first prayer.
           </p>
         )}
-        <ul className="scroll-touch flex max-h-[40vh] flex-row gap-2 overflow-x-auto pb-1 lg:max-h-[70vh] lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0">
+        <ul className="scroll-touch flex max-h-[40vh] flex-col gap-2 overflow-y-auto pb-1 md:max-h-[calc(100vh-12rem)]">
           {entries.map((entry) => (
-            <li
-              key={entry.id}
-              className="w-[min(85vw,18rem)] shrink-0 lg:w-auto lg:shrink"
-            >
+            <li key={entry.id} className="w-full min-w-0">
               <div
                 className={`group rounded-lg border border-border p-3 transition-colors ${
                   selectedId === entry.id
@@ -589,7 +597,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
             </li>
           ))}
         </ul>
-      </div>
+      </aside>
     </div>
   );
 }

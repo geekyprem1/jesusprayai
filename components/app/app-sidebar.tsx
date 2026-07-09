@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BookMarked,
   BookOpen,
   Home,
   ListTodo,
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/app", label: "Home", icon: Home, exact: true },
   { href: "/app/journal", label: "Journal", icon: NotebookPen },
+  { href: "/app/verses", label: "Verses", icon: BookMarked },
   { href: "/app/requests", label: "Requests", icon: ListTodo },
   { href: "/app/bible", label: "Bible", icon: BookOpen },
   { href: "/app/settings", label: "Settings", icon: Settings },
@@ -49,12 +51,12 @@ export function AppSidebar() {
         })}
       </nav>
 
-      {/* Mobile bottom tab bar */}
+      {/* Mobile bottom tab bar — 6 items */}
       <nav
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-md md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <ul className="mx-auto grid max-w-lg grid-cols-5 gap-0 px-1 pt-1">
+        <ul className="mx-auto grid max-w-lg grid-cols-6 gap-0 px-0.5 pt-1">
           {nav.map((item) => {
             const active = item.exact
               ? pathname === item.href
@@ -65,19 +67,14 @@ export function AppSidebar() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium sm:text-xs",
-                    active
-                      ? "text-primary"
-                      : "text-muted-foreground"
+                    "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg px-0.5 py-1.5 text-[9px] font-medium sm:text-[10px]",
+                    active ? "text-primary" : "text-muted-foreground"
                   )}
                 >
                   <Icon
-                    className={cn(
-                      "size-5",
-                      active && "stroke-[2.25px]"
-                    )}
+                    className={cn("size-5", active && "stroke-[2.25px]")}
                   />
-                  <span className="truncate">{item.label}</span>
+                  <span className="max-w-full truncate">{item.label}</span>
                 </Link>
               </li>
             );
