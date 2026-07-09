@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PrayNote AI
 
-## Getting Started
+AI prayer journal & Bible note-taker (Next.js 16 + React 19).
 
-First, run the development server:
+Docs (parent folder): `../PrayNote_AI_PRD_NextJS_React.md`, `../ARCHITECTURE.md`, `../PHASE_PLAN.md`.
+
+## Status
+
+| Item | Status |
+|---|---|
+| Phase 0 scaffold + OpenRouter stub | Done |
+| Phase 1 auth + app shell | Done |
+| Phase 2 journal cloud + offline + Bible | Done |
+| Phase 3 AI + requests + devotionals | Done |
+| Phase 4 reminders, PWA, pricing UI, deploy docs | Done |
+| SQL migrations | `001`–`004` — run all in Supabase |
+| Deploy | See `DEPLOY.md` (no Lemon Squeezy yet) |
+| Supabase / OpenRouter keys | **You** fill `.env.local` |
+| Lemon Squeezy | Later (Phase PAY) |
+
+### Routes
+
+| Path | Purpose |
+|---|---|
+| `/` | Marketing landing |
+| `/login` · `/signup` | Auth |
+| `/app` | App home |
+| `/app/journal` | Journal (Supabase when logged in; offline drafts) |
+| `/app/bible` | Passage lookup (bible-api.com) |
+| `/app/requests` | Placeholder (Phase 3) |
+| `/app/settings` | Account / logout |
+| `/api/bible/passage` | Bible proxy API |
+
+## Setup
 
 ```bash
+cd praynote
+npm install
+cp .env.example .env.local   # if needed
+# Fill NEXT_PUBLIC_SUPABASE_* and OPENROUTER_* in .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Env (AI)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_MODEL=deepseek/deepseek-v4-flash
+# Change model anytime via env only — no code change
+```
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Local dev |
+| `npm run build` | Production build |
+| `npm run start` | Serve production build |
+| `npm run lint` | ESLint |
