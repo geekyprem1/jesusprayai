@@ -11,7 +11,7 @@
  *  - Requests with Authorization header
  */
 
-const VERSION = "praynote-pwa-v3";
+const VERSION = "praynote-pwa-v4";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
