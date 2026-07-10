@@ -83,5 +83,21 @@ In Supabase → Authentication → URL config:
 
 ## PWA
 
-Production only: service worker registers from `RegisterServiceWorker`.  
-Installable via browser “Add to Home Screen” when HTTPS.
+Production-ready Progressive Web App:
+
+| Piece | Path |
+|---|---|
+| Manifest | `public/manifest.webmanifest` |
+| Service worker | `public/sw.js` (register via `RegisterServiceWorker`) |
+| Offline page | `/offline` |
+| Icons | `public/icons/*` (regenerate: `npm run pwa:icons`) |
+| Install UI | `InstallPrompt` + header/settings `InstallButton` |
+
+**Caching:** static = cache-first; navigations = network-first → `/offline`; **never** caches `/api/*`, auth, or cross-origin (Supabase).
+
+**Verify after deploy (HTTPS only):**
+1. Chrome DevTools → Application → Manifest (icons, theme, start_url)
+2. Application → Service Workers → activated
+3. Lighthouse → Progressive Web App
+4. Network offline → `/offline` message
+5. Install banner / “Install PrayNote” on eligible Chrome

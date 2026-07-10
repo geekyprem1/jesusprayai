@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { SignOutButton } from "@/components/app/sign-out-button";
 import { ReminderSettings } from "@/components/settings/reminder-settings";
+import { InstallButton } from "@/components/pwa/install-button";
 import { isSupabaseConfigured } from "@/lib/env";
 
 export const metadata = {
@@ -36,9 +37,20 @@ export default function SettingsPage() {
               : "Sign in to sync your account across devices."}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <SignOutButton />
+          <InstallButton />
         </CardContent>
+      </Card>
+
+      <Card className="border-dashed">
+        <CardHeader>
+          <CardTitle className="text-base">Install app</CardTitle>
+          <CardDescription>
+            Add PrayNote to your home screen for a full-screen, offline-ready
+            experience. On iPhone use Safari → Share → Add to Home Screen.
+          </CardDescription>
+        </CardHeader>
       </Card>
 
       {configured ? (

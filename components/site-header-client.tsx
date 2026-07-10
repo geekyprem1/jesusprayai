@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { CrossMark } from "@/components/brand/cross-mark";
+import { InstallButton } from "@/components/pwa/install-button";
 
 type Props = {
   email: string | null;
@@ -34,6 +35,7 @@ export function SiteHeaderClient({ email, signOutSlot }: Props) {
 
         {/* Desktop / tablet nav */}
         <nav className="hidden items-center gap-1 md:flex md:gap-2">
+          <InstallButton className="mr-1 hidden lg:inline-flex" />
           <Link
             href="/#features"
             className="rounded-full px-3 py-2 text-sm text-[oklch(0.35_0.04_255)] transition hover:bg-[oklch(0.94_0.02_85)]"
