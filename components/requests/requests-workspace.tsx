@@ -20,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LoadingScreen } from "@/components/brand/loading-screen";
 
 const CATEGORIES: RequestCategory[] = [
   "health",
@@ -243,7 +244,7 @@ export function RequestsWorkspace() {
 
       <div className="flex flex-col gap-3">
         {loading && (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <LoadingScreen label="Loading requests…" size="sm" delayMs={280} />
         )}
         {!loading && items.length === 0 && (
           <Card className="border-dashed">

@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { BiblePassage, BibleTranslation } from "@/lib/bible/types";
+import { LoadingScreen } from "@/components/brand/loading-screen";
 
 const EXAMPLES = [
   "John 3:16",
@@ -138,7 +139,16 @@ export function BibleReader() {
         </p>
       )}
 
-      {passage && (
+      {loading && (
+        <LoadingScreen
+          label="Looking up Scripture…"
+          size="sm"
+          delayMs={200}
+          className="min-h-[10rem] rounded-xl border border-border/60 bg-card/40"
+        />
+      )}
+
+      {!loading && passage && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base break-words sm:text-lg">

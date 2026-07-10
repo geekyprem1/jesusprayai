@@ -44,13 +44,17 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAppRoute = path.startsWith("/app");
+  const isAdminRoute = path.startsWith("/admin");
   // OAuth callback must always run (code exchange) — do not bounce it away
   const isOAuthCallback = path.startsWith("/auth/callback");
 
-  if (isAppRoute && !user) {
+  if ((isAppRoute || isAdminRoute) && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set("next", safeNextPath(path, "/app"));
+    redirectUrl.searchParams.set(
+      "next",
+      safeNextPath(path, isAdminRoute ? "/admin" : "/app")
+    );
     return NextResponse.redirect(redirectUrl);
   }
 

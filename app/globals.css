@@ -292,12 +292,104 @@
   border-color: oklch(0.72 0.1 85 / 0.45);
 }
 
+/* ─── Brand logo loader ─── */
+@keyframes logo-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@keyframes logo-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes logo-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes logo-label-fade {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.logo-loader-mark {
+  animation: logo-breathe 2.2s ease-in-out infinite;
+}
+
+.logo-loader-orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 220deg,
+    oklch(0.78 0.1 85 / 0.15) 280deg,
+    oklch(0.72 0.12 85 / 0.95) 340deg,
+    oklch(0.85 0.08 85 / 0.4) 360deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 2.5px),
+    #000 calc(100% - 2px)
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 2.5px),
+    #000 calc(100% - 2px)
+  );
+  animation: logo-orbit 1.15s linear infinite;
+}
+
+.logo-loader-glow {
+  position: absolute;
+  inset: 12%;
+  border-radius: 28%;
+  background: radial-gradient(
+    circle,
+    oklch(0.78 0.1 85 / 0.35) 0%,
+    transparent 70%
+  );
+  animation: logo-glow-pulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.logo-loader-label {
+  animation: logo-label-fade 1.8s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-faith-up,
   .animate-faith-in,
   .animate-faith-float,
   .animate-faith-glow,
   .animate-faith-cross {
+    animation: none !important;
+  }
+
+  .logo-loader-mark,
+  .logo-loader-orbit,
+  .logo-loader-glow,
+  .logo-loader-label {
     animation: none !important;
   }
 

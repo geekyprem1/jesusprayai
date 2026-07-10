@@ -40,6 +40,7 @@ import {
 import type { JournalEntryView, PrayerCategory } from "@/types/journal";
 import { CATEGORIES } from "@/lib/ai/schemas";
 import { VoicePrayerButton } from "@/components/journal/voice-prayer-button";
+import { LoadingScreen } from "@/components/brand/loading-screen";
 
 const MOODS = [
   { id: "peaceful", label: "Peaceful", emoji: "😌" },
@@ -719,7 +720,12 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
           Recent ({entries.length})
         </h2>
         {!hydrated && (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <LoadingScreen
+            label="Loading journal…"
+            size="sm"
+            delayMs={280}
+            className="min-h-[6rem] py-4"
+          />
         )}
         {hydrated && entries.length === 0 && (
           <Card className="border-dashed">

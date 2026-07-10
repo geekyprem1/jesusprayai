@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ShareVerseButton } from "@/components/verses/share-verse-button";
+import { LoadingScreen } from "@/components/brand/loading-screen";
 
 function formatDate(iso: string) {
   try {
@@ -63,7 +64,9 @@ export function SavedVersesList() {
   }
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground">Loading your verses…</p>;
+    return (
+      <LoadingScreen label="Loading your verses…" size="sm" delayMs={280} />
+    );
   }
 
   if (error && verses.length === 0) {

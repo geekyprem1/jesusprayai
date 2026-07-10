@@ -10,8 +10,14 @@ Payments (Lemon Squeezy) are **not** part of this deploy.
    - `003_phase3_ai_requests.sql`
    - `004_reminders.sql`
    - `005_security_hardening.sql` (plan_tier lock, AI quotas, RLS fixes)
-2. OpenRouter key + model env
-3. Vercel account linked to this repo / folder
+   - `006_google_oauth_profile.sql`
+   - `007_admin.sql` (roles, ban fields, admin audit log)
+2. After `007_admin.sql`, promote yourself:  
+   `update public.profiles set role = 'admin' where id = '<your-auth-user-uuid>';`
+3. OpenRouter key + model env
+4. Vercel account linked to this repo / folder
+
+Admin UI: `/admin` (requires `role = admin` + `SUPABASE_SERVICE_ROLE_KEY`)
 
 ## Vercel project
 

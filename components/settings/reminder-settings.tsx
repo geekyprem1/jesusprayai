@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LoadingScreen } from "@/components/brand/loading-screen";
 
 const TIMEZONES = [
   "UTC",
@@ -83,7 +84,7 @@ export function ReminderSettings() {
 
   if (loading) {
     return (
-      <p className="text-sm text-muted-foreground">Loading reminders…</p>
+      <LoadingScreen label="Loading reminders…" size="sm" delayMs={280} />
     );
   }
 

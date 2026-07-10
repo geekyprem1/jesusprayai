@@ -1,8 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CrossMark } from "@/components/brand/cross-mark";
 import { BRAND, supportMailto } from "@/lib/brand";
 
 export function SiteFooter() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <footer className="border-t border-[oklch(0.72_0.1_85/0.3)] bg-[oklch(0.26_0.05_255)] text-[oklch(0.9_0.02_85)] pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto grid max-w-6xl gap-8 px-3 py-10 sm:grid-cols-2 sm:px-4 sm:py-12 lg:grid-cols-4">
@@ -86,7 +94,7 @@ export function SiteFooter() {
             A word for the road
           </p>
           <p className="font-display text-base italic leading-relaxed text-[oklch(0.88_0.03_85)]">
-            “Draw nigh to God, and he will draw nigh to you.”
+            &ldquo;Draw nigh to God, and he will draw nigh to you.&rdquo;
           </p>
           <p className="mt-2 text-xs tracking-wide text-[oklch(0.72_0.06_85)]">
             — James 4:8 (KJV)

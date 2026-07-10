@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -8,14 +9,29 @@ import {
 import { SignOutButton } from "@/components/app/sign-out-button";
 import { ReminderSettings } from "@/components/settings/reminder-settings";
 import { InstallButton } from "@/components/pwa/install-button";
+import { Button } from "@/components/ui/button";
 import { isSupabaseConfigured } from "@/lib/env";
+import { createClient } from "@/lib/supabase/server";
+import { getIsAdmin } from "@/lib/auth/require-admin";
 
 export const metadata = {
   title: "Settings",
 };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
   const configured = isSupabaseConfigured();
+  let isAdmin = false;
+  if (configured) {
+    try {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      isAdmin = await getIsAdmin(user?.id);
+    } catch {
+      isAdmin = false;
+    }
+  }
 
   return (
     <div className="flex w-full max-w-lg flex-col gap-4 sm:gap-6">
@@ -40,6 +56,11 @@ export default function SettingsPage() {
         <CardContent className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <SignOutButton />
           <InstallButton />
+          {isAdmin && (
+            <Button variant="outline" render={<Link href="/admin" />}>
+              Admin dashboard
+            </Button>
+          )}
         </CardContent>
       </Card>
 

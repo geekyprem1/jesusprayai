@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { CrossMark } from "@/components/brand/cross-mark";
 import { InstallButton } from "@/components/pwa/install-button";
@@ -12,9 +13,15 @@ type Props = {
 };
 
 export function SiteHeaderClient({ email, signOutSlot }: Props) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const close = () => setOpen(false);
+
+  // Admin has its own chrome
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-[oklch(0.72_0.1_85/0.25)] bg-[oklch(0.98_0.015_85/0.95)] backdrop-blur-md pt-[env(safe-area-inset-top)]">
