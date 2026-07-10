@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bookmark, Cloud, CloudOff, Sparkles, Trash2 } from "lucide-react";
 import { ShareVerseButton } from "@/components/verses/share-verse-button";
+import Link from "next/link";
 import {
   createPrayerEntry,
   deletePrayerEntry,
+  getPrayerEntryQuota,
   listPrayerEntries,
   updatePrayerEntry,
+  type PrayerEntryQuota,
 } from "@/app/journal/actions";
 import {
   listEntryVerses,
@@ -109,6 +112,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
   const [online, setOnline] = useState(true);
   const [mode, setMode] = useState<"cloud" | "local">("local");
   const [verses, setVerses] = useState<EntryVerseRow[]>([]);
+  const [quota, setQuota] = useState<PrayerEntryQuota | null>(null);
 
   const selected = useMemo(
     () => entries.find((e) => e.id === selectedId) ?? null,
@@ -127,6 +131,17 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
         .slice(0, 8),
     [tagsInput]
   );
+
+  const refreshQuota = useCallback(async () => {
+    if (!cloudEnabled) {
+      setQuota(null);
+      return;
+    }
+    const result = await getPrayerEntryQuota();
+    if (result.ok && result.data) {
+      setQuota(result.data);
+    }
+  }, [cloudEnabled]);
 
   const loadCloud = useCallback(async () => {
     const result = await listPrayerEntries();
@@ -149,7 +164,8 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
         syncState: "synced" as const,
       }))
     );
-  }, []);
+    void refreshQuota();
+  }, [refreshQuota]);
 
   const loadVerses = useCallback(async (entryId: string) => {
     const result = await listEntryVerses(entryId);
@@ -305,6 +321,22 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
 
   async function handleSave() {
     if (!body.trim()) return;
+
+    // Free plan: block new entries when cloud quota is full
+    if (
+      cloudEnabled &&
+      mode === "cloud" &&
+      quota?.atLimit &&
+      navigator.onLine
+    ) {
+      setStatus(
+        quota.limit != null
+          ? `Free plan allows ${quota.limit} prayer entries. Delete an older one or upgrade for unlimited.`
+          : "Entry limit reached."
+      );
+      return;
+    }
+
     setSaving(true);
     setStatus(null);
 
@@ -345,6 +377,17 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
     });
 
     if (!result.ok || !result.data) {
+      // Don't keep a local phantom entry when free-plan limit blocked the save
+      const isLimit =
+        result.error?.toLowerCase().includes("free plan allows") ?? false;
+      if (isLimit) {
+        await removeDraft(clientId).catch(() => undefined);
+        setStatus(result.error ?? "Free entry limit reached.");
+        void refreshQuota();
+        setSaving(false);
+        return;
+      }
+
       const local = createEntry(plain);
       local.id = clientId;
       local.category = draftCategory;
@@ -430,6 +473,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
       await removeDraft(id).catch(() => undefined);
     }
     if (selectedId === id) setSelectedId(null);
+    void refreshQuota();
   }
 
   async function handleToggleVerse(verseId: string, saved: boolean) {
@@ -459,6 +503,20 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
           )}
           <span className="hidden sm:inline">·</span>
           <span>{mode === "cloud" ? "Synced account" : "On this device"}</span>
+          {quota?.limit != null && (
+            <>
+              <span className="hidden sm:inline">·</span>
+              <span
+                className={
+                  quota.atLimit
+                    ? "font-medium text-amber-800 dark:text-amber-200"
+                    : undefined
+                }
+              >
+                Free plan {quota.count}/{quota.limit} entries
+              </span>
+            </>
+          )}
           {aiLoading && (
             <span className="inline-flex items-center gap-1 text-primary">
               <Sparkles className="size-3.5 animate-pulse" /> AI running…
@@ -466,11 +524,27 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
           )}
         </div>
 
+        {quota?.atLimit && (
+          <p className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-sm text-amber-950 dark:text-amber-100">
+            Free plan allows {quota.limit} prayer entries. Delete an older entry
+            to free a slot, or{" "}
+            <Link href="/pricing" className="font-medium underline underline-offset-2">
+              see Premium
+            </Link>{" "}
+            (coming soon) for unlimited journal.
+          </p>
+        )}
+
         <Card>
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">New prayer entry</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               Capture the moment — mood, category, and tags help AI know you better.
+              {quota?.limit != null && !quota.atLimit && (
+                <span className="mt-1 block text-muted-foreground">
+                  Free plan: {quota.remaining} of {quota.limit} entries remaining.
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -565,7 +639,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
               </span>
             </div>
             <VoicePrayerButton
-              disabled={saving}
+              disabled={saving || Boolean(quota?.atLimit && mode === "cloud")}
               onTranscript={(text) => {
                 setBody((prev) => {
                   const next = prev.trim()
@@ -581,9 +655,17 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
                 type="button"
                 className="w-full sm:w-auto"
                 onClick={() => void handleSave()}
-                disabled={!body.trim() || saving}
+                disabled={
+                  !body.trim() ||
+                  saving ||
+                  Boolean(quota?.atLimit && mode === "cloud" && online)
+                }
               >
-                {saving ? "Saving…" : "Save entry"}
+                {saving
+                  ? "Saving…"
+                  : quota?.atLimit && mode === "cloud"
+                    ? "Limit reached"
+                    : "Save entry"}
               </Button>
             </div>
             {status && (

@@ -6,6 +6,11 @@ export const LIMITS = {
   /** Max prayer request title / description */
   requestTitleMax: 200,
   requestDescriptionMax: 5_000,
+  /**
+   * Free plan: max stored prayer journal entries (lifetime until upgraded).
+   * Paid tiers (monthly, annual, family, church_*) are unlimited.
+   */
+  freePrayerEntriesMax: 20,
   /** Free-tier AI calls per UTC day (categorize+verses counts as 1; insight as 1) */
   aiCallsPerDay: 20,
   /** Whisper transcripts per UTC day */

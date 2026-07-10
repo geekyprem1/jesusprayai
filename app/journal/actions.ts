@@ -39,6 +39,75 @@ async function requireUser(): Promise<AuthOk | AuthErr> {
   return { supabase, user };
 }
 
+export type PrayerEntryQuota = {
+  planTier: string;
+  count: number;
+  limit: number | null;
+  remaining: number | null;
+  atLimit: boolean;
+};
+
+const PAID_TIERS = new Set([
+  "monthly",
+  "annual",
+  "family",
+  "church_basic",
+  "church_pro",
+]);
+
+function freeEntryLimitForPlan(planTier: string | null | undefined): number | null {
+  if (!planTier || planTier === "free") {
+    return LIMITS.freePrayerEntriesMax;
+  }
+  if (PAID_TIERS.has(planTier)) return null;
+  // Unknown tier → treat as free (safe default for launch)
+  return LIMITS.freePrayerEntriesMax;
+}
+
+/** Current entry count + free-plan cap (null limit = unlimited). */
+export async function getPrayerEntryQuota(): Promise<
+  JournalActionResult<PrayerEntryQuota>
+> {
+  const auth = await requireUser();
+  if ("errorMessage" in auth) {
+    return { ok: false, error: auth.errorMessage };
+  }
+
+  const { supabase, user } = auth;
+  const [{ data: profile }, { count, error }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("plan_tier")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("prayer_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
+  ]);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  const planTier = profile?.plan_tier ?? "free";
+  const entryCount = count ?? 0;
+  const limit = freeEntryLimitForPlan(planTier);
+  const remaining =
+    limit == null ? null : Math.max(0, limit - entryCount);
+
+  return {
+    ok: true,
+    data: {
+      planTier,
+      count: entryCount,
+      limit,
+      remaining,
+      atLimit: limit != null && entryCount >= limit,
+    },
+  };
+}
+
 export async function listPrayerEntries(): Promise<
   JournalActionResult<PrayerEntry[]>
 > {
@@ -104,6 +173,33 @@ export async function createPrayerEntry(input: {
 
     if (existing) {
       return { ok: true, data: existing as PrayerEntry };
+    }
+  }
+
+  // Free plan: max N journal entries (paid = unlimited)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("plan_tier")
+    .eq("id", user.id)
+    .maybeSingle();
+  const planTier = profile?.plan_tier ?? "free";
+  const freeLimit = freeEntryLimitForPlan(planTier);
+
+  if (freeLimit != null) {
+    const { count, error: countErr } = await supabase
+      .from("prayer_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
+    if (countErr) {
+      return { ok: false, error: countErr.message };
+    }
+
+    if ((count ?? 0) >= freeLimit) {
+      return {
+        ok: false,
+        error: `Free plan allows ${freeLimit} prayer entries. Delete an older entry or upgrade to Premium for unlimited journal.`,
+      };
     }
   }
 
