@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CrossMark } from "@/components/brand/cross-mark";
+import { BRAND, supportMailto } from "@/lib/brand";
 
 export function SiteFooter() {
   return (
@@ -17,6 +18,15 @@ export function SiteFooter() {
             A quiet place for Christians to journal prayer, meet Scripture, and
             remember God&apos;s faithfulness. A project by the Eternal Faith
             team.
+          </p>
+          <p className="text-sm text-[oklch(0.85_0.02_85)]">
+            <span className="text-[oklch(0.72_0.04_85)]">Contact: </span>
+            <a
+              href={supportMailto}
+              className="font-medium text-[oklch(0.88_0.08_85)] underline-offset-4 hover:text-white hover:underline"
+            >
+              {BRAND.supportEmail}
+            </a>
           </p>
         </div>
 
@@ -92,6 +102,10 @@ export function SiteFooter() {
           the Church
         </span>
         <span className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 sm:justify-end">
+          <a href={supportMailto} className="hover:text-white">
+            {BRAND.supportEmail}
+          </a>
+          <span aria-hidden>·</span>
           <Link href="/privacy" className="hover:text-white">
             Privacy
           </Link>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { BRAND, supportMailto } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -24,9 +25,14 @@ export default function PrivacyPage() {
           PrayNote website and web app.
         </p>
         <p>
-          For privacy questions, contact us through the Eternal Faith page
-          messaging channels or the support contact listed on the site when
-          available.
+          For privacy questions, email us at{" "}
+          <a
+            href={supportMailto}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {BRAND.supportEmail}
+          </a>
+          .
         </p>
       </LegalSection>
 
@@ -192,8 +198,14 @@ export default function PrivacyPage() {
 
       <LegalSection title="13. Contact">
         <p>
-          Questions about privacy: reach the Eternal Faith / PrayNote team via
-          the Facebook page or the support channel listed on the site.
+          Questions about privacy: email the Eternal Faith / PrayNote team at{" "}
+          <a
+            href={supportMailto}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {BRAND.supportEmail}
+          </a>
+          .
         </p>
       </LegalSection>
     </LegalPage>

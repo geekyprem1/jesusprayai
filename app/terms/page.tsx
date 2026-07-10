@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { BRAND, supportMailto } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
@@ -167,8 +168,15 @@ export default function TermsPage() {
 
       <LegalSection title="13. Contact">
         <p>
-          Questions about these Terms: contact the Eternal Faith / PrayNote team
-          via the Facebook page or support channel listed on the site.
+          Questions about these Terms: email the Eternal Faith / PrayNote team
+          at{" "}
+          <a
+            href={supportMailto}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {BRAND.supportEmail}
+          </a>
+          .
         </p>
       </LegalSection>
     </LegalPage>

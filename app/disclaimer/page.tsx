@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage, LegalSection } from "@/components/legal/legal-page";
+import { BRAND, supportMailto } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Disclaimer",
@@ -129,6 +130,19 @@ export default function DisclaimerPage() {
           We hope PrayNote helps you pray with the Word. Technology is a tool;
           Jesus Christ is Lord. Use this app as a help — never as a replacement
           for Scripture, prayer, fellowship, or the local church.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="11. Contact">
+        <p>
+          Questions about this disclaimer:{" "}
+          <a
+            href={supportMailto}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {BRAND.supportEmail}
+          </a>
+          .
         </p>
       </LegalSection>
     </LegalPage>
