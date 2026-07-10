@@ -124,3 +124,46 @@ export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+/**
+ * Start Google OAuth (Supabase provider).
+ * Requires Google enabled in Supabase Dashboard → Authentication → Providers.
+ */
+export async function signInWithGoogle(
+  _prev: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  if (!isSupabaseConfigured()) return notConfigured();
+
+  const next = safeNextPath(formData.get("next"), "/app");
+  const h = await headers();
+  const origin =
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+    h.get("origin") ||
+    `${h.get("x-forwarded-proto") ?? "http"}://${h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000"}`;
+
+  const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo,
+      queryParams: {
+        prompt: "select_account",
+      },
+    },
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+  if (!data.url) {
+    return {
+      error:
+        "Google sign-in is not available. Enable the Google provider in Supabase Authentication.",
+    };
+  }
+
+  redirect(data.url);
+}

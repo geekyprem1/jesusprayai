@@ -8,12 +8,18 @@ import {
 import { AuthForm } from "@/components/auth/auth-form";
 import { signUp } from "@/app/auth/actions";
 import { isSupabaseConfigured } from "@/lib/env";
+import { safeNextPath } from "@/lib/security/safe-next";
+
+type Props = {
+  searchParams: Promise<{ next?: string; error?: string }>;
+};
 
 export const metadata = {
   title: "Sign up",
 };
 
-export default function SignupPage() {
+export default async function SignupPage({ searchParams }: Props) {
+  const { next, error } = await searchParams;
   const configured = isSupabaseConfigured();
 
   return (
@@ -22,7 +28,7 @@ export default function SignupPage() {
         <CardHeader>
           <CardTitle>Create your account</CardTitle>
           <CardDescription>
-            Free to start. Journal prayers and grow your walk with God.
+            Fastest path: Continue with Google. Free to start.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -32,7 +38,12 @@ export default function SignupPage() {
               <code className="text-xs">.env.local</code> before signing up.
             </p>
           )}
-          <AuthForm mode="signup" action={signUp} />
+          <AuthForm
+            mode="signup"
+            action={signUp}
+            nextPath={safeNextPath(next, "/app")}
+            oauthError={error ? decodeURIComponent(error) : null}
+          />
         </CardContent>
       </Card>
     </div>

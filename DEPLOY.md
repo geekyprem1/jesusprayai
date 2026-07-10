@@ -69,7 +69,24 @@ curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN/api/cron/re
 In Supabase → Authentication → URL config:
 
 - Site URL: `https://your-domain.vercel.app`
-- Redirect URLs: `https://your-domain.vercel.app/**`
+- Redirect URLs:
+  - `https://your-domain.vercel.app/**`
+  - `https://your-domain.vercel.app/auth/callback`
+  - `http://localhost:3000/auth/callback` (local)
+
+### Google sign-in (required for “Continue with Google”)
+
+1. **Google Cloud Console** → APIs & Services → Credentials → Create OAuth 2.0 Client ID (Web)
+2. Authorized JavaScript origins:
+   - `https://your-domain.vercel.app`
+   - `http://localhost:3000`
+3. Authorized redirect URIs (important — Supabase URL, not your app):
+   - `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
+4. **Supabase** → Authentication → Providers → **Google** → Enable  
+   paste Client ID + Client Secret → Save
+5. Run migration `006_google_oauth_profile.sql` (display name from Google)
+
+App routes: login/signup show **Continue with Google** → `/auth/callback` exchanges the code.
 
 ## After deploy checklist
 

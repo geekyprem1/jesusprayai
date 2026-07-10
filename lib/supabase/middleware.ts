@@ -44,10 +44,8 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAppRoute = path.startsWith("/app");
-  const isAuthRoute =
-    path.startsWith("/login") ||
-    path.startsWith("/signup") ||
-    path.startsWith("/auth");
+  // OAuth callback must always run (code exchange) — do not bounce it away
+  const isOAuthCallback = path.startsWith("/auth/callback");
 
   if (isAppRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
@@ -56,7 +54,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (isAuthRoute && user && (path === "/login" || path === "/signup")) {
+  if (
+    user &&
+    (path === "/login" || path === "/signup") &&
+    !isOAuthCallback
+  ) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/app";
     return NextResponse.redirect(redirectUrl);

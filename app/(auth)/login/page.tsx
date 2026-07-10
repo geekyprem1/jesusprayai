@@ -11,7 +11,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { safeNextPath } from "@/lib/security/safe-next";
 
 type Props = {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 };
 
 export const metadata = {
@@ -19,7 +19,7 @@ export const metadata = {
 };
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { next } = await searchParams;
+  const { next, error } = await searchParams;
   const configured = isSupabaseConfigured();
 
   return (
@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: Props) {
         <CardHeader>
           <CardTitle>Welcome back</CardTitle>
           <CardDescription>
-            Log in to your prayer journal and continue where you left off.
+            Continue with Google in one tap — or use email.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -42,6 +42,7 @@ export default async function LoginPage({ searchParams }: Props) {
             mode="login"
             action={signIn}
             nextPath={safeNextPath(next, "/app")}
+            oauthError={error ? decodeURIComponent(error) : null}
           />
         </CardContent>
       </Card>
