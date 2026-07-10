@@ -246,11 +246,32 @@ export function RequestsWorkspace() {
           <p className="text-sm text-muted-foreground">Loading…</p>
         )}
         {!loading && items.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            {tab === "archive"
-              ? "No answered prayers yet."
-              : "No active requests. Add one above."}
-          </p>
+          <Card className="border-dashed">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">
+                {tab === "archive"
+                  ? "No answered prayers yet"
+                  : "Every answered prayer begins with one request"}
+              </CardTitle>
+              <CardDescription>
+                {tab === "archive"
+                  ? "When God moves, mark a request answered — your timeline of faithfulness grows here."
+                  : "Write down what you're trusting God for. Health, family, work — bring it all."}
+              </CardDescription>
+            </CardHeader>
+            {tab === "active" && (
+              <CardContent>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    document.getElementById("req-title")?.focus();
+                  }}
+                >
+                  Add a request
+                </Button>
+              </CardContent>
+            )}
+          </Card>
         )}
         {items.map((item) => (
           <Card key={item.id}>

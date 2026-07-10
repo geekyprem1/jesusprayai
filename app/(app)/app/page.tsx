@@ -9,6 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getTodayDevotional } from "@/app/devotional/actions";
+import { getHomeDashboard } from "@/app/insights/actions";
+import { AiReflectionCard } from "@/components/home/ai-reflection-card";
+import { HomeStatsGrid } from "@/components/home/home-stats-grid";
+import { PrayerAnalyticsCard } from "@/components/home/prayer-analytics-card";
 import { WeeklyInsightCard } from "@/components/insights/weekly-insight-card";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
@@ -33,6 +37,9 @@ export default async function AppHomePage() {
     }
   }
 
+  const dashboard = showInsights ? await getHomeDashboard() : null;
+  const dash = dashboard?.ok ? dashboard.data : null;
+
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
       <div>
@@ -40,11 +47,42 @@ export default async function AppHomePage() {
           Welcome back
         </h1>
         <p className="mt-1 text-sm text-muted-foreground sm:text-base">
-          Journal with AI verse linking, track requests, and stay in the Word.
+          Your prayer life, at a glance — streak, reflections, and Scripture.
         </p>
       </div>
 
-      {showInsights && <WeeklyInsightCard />}
+      {dash ? (
+        <>
+          <AiReflectionCard
+            reflection={dash.aiReflection}
+            topCategory={dash.week.topCategory}
+          />
+          <HomeStatsGrid data={dash} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <PrayerAnalyticsCard week={dash.week} />
+            <WeeklyInsightCard week={dash.week} />
+          </div>
+        </>
+      ) : (
+        <Card className="border-dashed border-[oklch(0.72_0.12_85/0.4)] bg-gradient-to-br from-[oklch(0.28_0.05_255)] to-[oklch(0.32_0.05_255)] text-white">
+          <CardHeader>
+            <CardTitle className="font-display text-xl text-white">
+              AI Reflection
+            </CardTitle>
+            <CardDescription className="text-[oklch(0.85_0.03_85)]">
+              Sign in to unlock personal encouragement from your prayers.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              className="bg-[oklch(0.78_0.1_85)] text-[oklch(0.22_0.04_255)] hover:bg-[oklch(0.84_0.1_85)]"
+              render={<Link href="/login" />}
+            >
+              Sign in
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -52,7 +90,7 @@ export default async function AppHomePage() {
           <CardDescription className="text-xs sm:text-sm">
             {devotional.ok && devotional.data
               ? `${devotional.data.verse_reference} · ${devotional.data.translation}`
-              : "Seed devotionals after running 003_phase3_ai_requests.sql"}
+              : "A quiet word for today"}
           </CardDescription>
         </CardHeader>
         {devotional.ok && devotional.data ? (
@@ -67,7 +105,8 @@ export default async function AppHomePage() {
         ) : (
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              {devotional.error ?? "No devotional found for today."}
+              {devotional.error ??
+                "Come back soon — a fresh reflection will be here."}
             </p>
           </CardContent>
         )}
@@ -80,7 +119,7 @@ export default async function AppHomePage() {
               <NotebookPen className="mb-1 size-5 text-primary" />
               <CardTitle className="text-sm sm:text-base">Journal</CardTitle>
               <CardDescription className="text-xs">
-                AI + prayers
+                Pray + AI
               </CardDescription>
             </CardHeader>
           </Card>

@@ -4,6 +4,23 @@ export type VerseSharePayload = {
   translation?: string;
 };
 
+/** Story / feed formats for social platforms */
+export type VerseCardFormat =
+  | "story" // 9:16 — IG Story, FB Story, WA Status
+  | "portrait" // 4:5 — IG feed / general
+  | "pin"; // 2:3 — Pinterest
+
+const FORMAT_SIZE: Record<VerseCardFormat, { w: number; h: number; label: string }> =
+  {
+    story: { w: 1080, h: 1920, label: "Story 9:16" },
+    portrait: { w: 1080, h: 1350, label: "Portrait 4:5" },
+    pin: { w: 1000, h: 1500, label: "Pinterest 2:3" },
+  };
+
+export function formatLabel(format: VerseCardFormat): string {
+  return FORMAT_SIZE[format].label;
+}
+
 /** Plain text for WhatsApp / FB / clipboard — short, mobile-friendly */
 export function buildVerseShareText(
   verse: VerseSharePayload,
@@ -36,6 +53,14 @@ export function facebookShareUrl(pageUrl: string, quote?: string): string {
   return u.toString();
 }
 
+/** Pinterest pin builder — needs a public image URL in production; we download image instead */
+export function pinterestShareUrl(pageUrl: string, description: string): string {
+  const u = new URL("https://www.pinterest.com/pin/create/button/");
+  u.searchParams.set("url", pageUrl);
+  u.searchParams.set("description", description.slice(0, 500));
+  return u.toString();
+}
+
 function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -59,13 +84,13 @@ function wrapText(
 }
 
 /**
- * Client-only: render a shareable verse image (1080×1350 — good for IG/WhatsApp status).
+ * Client-only: render a shareable verse image for stories / pins / feed.
  */
 export async function renderVerseCardPng(
-  verse: VerseSharePayload
+  verse: VerseSharePayload,
+  format: VerseCardFormat = "story"
 ): Promise<Blob> {
-  const W = 1080;
-  const H = 1350;
+  const { w: W, h: H } = FORMAT_SIZE[format];
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
@@ -81,46 +106,48 @@ export async function renderVerseCardPng(
   ctx.fillRect(0, 0, W, H);
 
   // Soft gold glow top
-  const glow = ctx.createRadialGradient(W * 0.5, 0, 20, W * 0.5, 180, 520);
+  const glow = ctx.createRadialGradient(W * 0.5, 0, 20, W * 0.5, H * 0.12, H * 0.4);
   glow.addColorStop(0, "rgba(224, 197, 122, 0.28)");
   glow.addColorStop(1, "rgba(224, 197, 122, 0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H * 0.55);
 
   // Gold frame
+  const pad = Math.round(W * 0.045);
   ctx.strokeStyle = "rgba(212, 184, 106, 0.55)";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(48, 48, W - 96, H - 96);
+  ctx.lineWidth = Math.max(2, Math.round(W * 0.003));
+  ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2);
 
   // Brand
+  const brandY = Math.round(H * 0.09);
   ctx.fillStyle = "rgba(224, 197, 122, 0.95)";
-  ctx.font = "500 28px Georgia, 'Times New Roman', serif";
+  ctx.font = `500 ${Math.round(W * 0.026)}px Georgia, 'Times New Roman', serif`;
   ctx.textAlign = "center";
-  ctx.fillText("PRAYNOTE", W / 2, 120);
+  ctx.fillText("PRAYNOTE", W / 2, brandY);
 
   ctx.fillStyle = "rgba(247, 243, 235, 0.55)";
-  ctx.font = "400 22px Georgia, 'Times New Roman', serif";
-  ctx.fillText("from Eternal Faith", W / 2, 158);
+  ctx.font = `400 ${Math.round(W * 0.02)}px Georgia, 'Times New Roman', serif`;
+  ctx.fillText("from Eternal Faith", W / 2, brandY + Math.round(H * 0.022));
 
   // Decorative line
   ctx.strokeStyle = "rgba(212, 184, 106, 0.45)";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 80, 190);
-  ctx.lineTo(W / 2 + 80, 190);
+  ctx.moveTo(W / 2 - W * 0.075, brandY + Math.round(H * 0.04));
+  ctx.lineTo(W / 2 + W * 0.075, brandY + Math.round(H * 0.04));
   ctx.stroke();
 
   // Verse body
   const quote = `“${verse.verseText.trim()}”`;
   ctx.fillStyle = "#f7f3eb";
-  ctx.font = "italic 44px Georgia, 'Times New Roman', serif";
+  let fontSize = Math.round(W * 0.042);
+  ctx.font = `italic ${fontSize}px Georgia, 'Times New Roman', serif`;
   ctx.textAlign = "center";
 
-  const maxTextWidth = W - 160;
+  const maxTextWidth = W - pad * 3.2;
   let lines = wrapText(ctx, quote, maxTextWidth);
-  // If too many lines, shrink font
-  let fontSize = 44;
-  while (lines.length > 12 && fontSize > 28) {
+  const maxLines = format === "story" ? 16 : 12;
+  while (lines.length > maxLines && fontSize > Math.round(W * 0.026)) {
     fontSize -= 2;
     ctx.font = `italic ${fontSize}px Georgia, 'Times New Roman', serif`;
     lines = wrapText(ctx, quote, maxTextWidth);
@@ -128,7 +155,7 @@ export async function renderVerseCardPng(
 
   const lineHeight = fontSize * 1.45;
   const blockHeight = lines.length * lineHeight;
-  let y = Math.max(280, (H - blockHeight) / 2 - 40);
+  let y = Math.max(H * 0.22, (H - blockHeight) / 2 - H * 0.03);
 
   for (const line of lines) {
     ctx.fillText(line, W / 2, y);
@@ -136,9 +163,9 @@ export async function renderVerseCardPng(
   }
 
   // Reference
-  y += 36;
+  y += Math.round(H * 0.03);
   ctx.fillStyle = "#d4b86a";
-  ctx.font = "600 32px Georgia, 'Times New Roman', serif";
+  ctx.font = `600 ${Math.round(W * 0.03)}px Georgia, 'Times New Roman', serif`;
   const refLine = verse.translation
     ? `${verse.reference.trim()} · ${verse.translation.trim()}`
     : verse.reference.trim();
@@ -146,8 +173,8 @@ export async function renderVerseCardPng(
 
   // Footer
   ctx.fillStyle = "rgba(247, 243, 235, 0.45)";
-  ctx.font = "400 22px Georgia, 'Times New Roman', serif";
-  ctx.fillText("Prayer that points to Scripture", W / 2, H - 90);
+  ctx.font = `400 ${Math.round(W * 0.02)}px Georgia, 'Times New Roman', serif`;
+  ctx.fillText("Prayer that points to Scripture", W / 2, H - Math.round(H * 0.055));
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
@@ -173,11 +200,14 @@ export function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function safeFilename(reference: string): string {
+export function safeFilename(
+  reference: string,
+  format: VerseCardFormat = "story"
+): string {
   const base = reference
     .trim()
     .replace(/[^\w\s.-]+/g, "")
     .replace(/\s+/g, "-")
     .slice(0, 48);
-  return `praynote-${base || "verse"}.png`;
+  return `praynote-${format}-${base || "verse"}.png`;
 }

@@ -78,16 +78,18 @@ export function SavedVersesList() {
     return (
       <Card className="border-dashed">
         <CardHeader>
-          <CardTitle className="text-base">No saved verses yet</CardTitle>
+          <CardTitle className="text-base">
+            Scripture waits to be collected
+          </CardTitle>
           <CardDescription>
-            After AI suggests verses in your journal, tap the bookmark icon to
-            keep them here.
+            Write a prayer, let AI suggest verses, then bookmark the ones that
+            speak to your heart — share them as beautiful story cards.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button render={<Link href="/app/journal" />}>
             <BookOpen className="size-4" />
-            Open journal
+            Write a prayer
           </Button>
         </CardContent>
       </Card>

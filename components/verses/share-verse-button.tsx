@@ -5,9 +5,23 @@ import {
   Check,
   Copy,
   Download,
+  ImageIcon,
   MessageCircle,
   Share2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  buildVerseShareText,
+  downloadBlob,
+  facebookShareUrl,
+  pinterestShareUrl,
+  renderVerseCardPng,
+  safeFilename,
+  whatsappShareUrl,
+  type VerseCardFormat,
+  type VerseSharePayload,
+} from "@/lib/share/verse-card";
+import { cn } from "@/lib/utils";
 
 /** Lucide dropped brand icons — simple FB “f” mark */
 function FacebookIcon({ className }: { className?: string }) {
@@ -22,17 +36,6 @@ function FacebookIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-import { Button } from "@/components/ui/button";
-import {
-  buildVerseShareText,
-  downloadBlob,
-  facebookShareUrl,
-  renderVerseCardPng,
-  safeFilename,
-  whatsappShareUrl,
-  type VerseSharePayload,
-} from "@/lib/share/verse-card";
-import { cn } from "@/lib/utils";
 
 type Props = {
   verse: VerseSharePayload;
@@ -46,6 +49,38 @@ function appOrigin(): string {
   return process.env.NEXT_PUBLIC_APP_URL ?? "";
 }
 
+const STORY_TARGETS: {
+  id: string;
+  label: string;
+  format: VerseCardFormat;
+  hint: string;
+}[] = [
+  {
+    id: "ig",
+    label: "Instagram Story",
+    format: "story",
+    hint: "9:16 image — save & upload to IG Story",
+  },
+  {
+    id: "wa",
+    label: "WhatsApp Status",
+    format: "story",
+    hint: "9:16 image for Status",
+  },
+  {
+    id: "fb",
+    label: "Facebook Story",
+    format: "story",
+    hint: "9:16 image for FB Story",
+  },
+  {
+    id: "pin",
+    label: "Pinterest",
+    format: "pin",
+    hint: "2:3 pin image",
+  },
+];
+
 export function ShareVerseButton({
   verse,
   variant = "compact",
@@ -55,6 +90,7 @@ export function ShareVerseButton({
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastDl, setLastDl] = useState<string | null>(null);
 
   const text = () => buildVerseShareText(verse, appOrigin() || undefined);
 
@@ -74,11 +110,10 @@ export function ShareVerseButton({
     setBusy(true);
     try {
       const shareText = text();
-      // Prefer image + text when Web Share Level 2 is available
       let file: File | undefined;
       try {
-        const blob = await renderVerseCardPng(verse);
-        file = new File([blob], safeFilename(verse.reference), {
+        const blob = await renderVerseCardPng(verse, "story");
+        file = new File([blob], safeFilename(verse.reference, "story"), {
           type: "image/png",
         });
       } catch {
@@ -98,7 +133,6 @@ export function ShareVerseButton({
         await copyText();
       }
     } catch (e) {
-      // User cancelled share sheet — ignore
       if (e instanceof Error && e.name === "AbortError") {
         /* no-op */
       } else {
@@ -117,7 +151,6 @@ export function ShareVerseButton({
   function openFacebook() {
     setError(null);
     const origin = appOrigin() || "https://praynote.app";
-    // FB sharer needs a public URL; quote carries the verse text
     window.open(
       facebookShareUrl(origin, text()),
       "_blank",
@@ -125,12 +158,25 @@ export function ShareVerseButton({
     );
   }
 
-  async function downloadCard() {
+  function openPinterest() {
+    setError(null);
+    const origin = appOrigin() || "https://praynote.app";
+    window.open(
+      pinterestShareUrl(origin, text()),
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
+  async function downloadCard(format: VerseCardFormat, label: string) {
     setError(null);
     setBusy(true);
+    setLastDl(null);
     try {
-      const blob = await renderVerseCardPng(verse);
-      downloadBlob(blob, safeFilename(verse.reference));
+      const blob = await renderVerseCardPng(verse, format);
+      downloadBlob(blob, safeFilename(verse.reference, format));
+      setLastDl(label);
+      window.setTimeout(() => setLastDl(null), 4000);
     } catch {
       setError("Could not create image. Try copy text instead.");
     } finally {
@@ -138,7 +184,7 @@ export function ShareVerseButton({
     }
   }
 
-  const actions = (
+  const quickActions = (
     <div
       className={cn(
         "flex flex-wrap items-center gap-1.5",
@@ -163,7 +209,7 @@ export function ShareVerseButton({
         variant="outline"
         disabled={busy}
         onClick={openWhatsApp}
-        title="WhatsApp"
+        title="WhatsApp text"
         aria-label="Share on WhatsApp"
         className="border-emerald-600/30 text-emerald-800 hover:bg-emerald-50"
       >
@@ -204,13 +250,54 @@ export function ShareVerseButton({
         size={variant === "full" ? "default" : "sm"}
         variant="outline"
         disabled={busy}
-        onClick={() => void downloadCard()}
-        title="Download image card"
-        aria-label="Download verse card image"
+        onClick={() => void downloadCard("story", "Story image")}
+        title="Download story image"
+        aria-label="Download verse story image"
       >
         <Download className="size-3.5" />
-        {variant === "full" && <span>Image</span>}
+        {variant === "full" && <span>Story image</span>}
       </Button>
+    </div>
+  );
+
+  const storyTemplates = (
+    <div className="mt-2 rounded-lg border border-border bg-muted/20 p-2.5">
+      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        <ImageIcon className="size-3.5" />
+        Story & pin templates
+      </p>
+      <div className="grid grid-cols-1 gap-1.5 min-[400px]:grid-cols-2">
+        {STORY_TARGETS.map((t) => (
+          <Button
+            key={t.id}
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={busy}
+            className="h-auto justify-start py-2 text-left"
+            onClick={() => {
+              if (t.id === "pin") {
+                void downloadCard(t.format, t.label).then(() => openPinterest());
+              } else {
+                void downloadCard(t.format, t.label);
+              }
+            }}
+            title={t.hint}
+          >
+            <span className="flex flex-col items-start gap-0.5">
+              <span className="text-xs font-medium">{t.label}</span>
+              <span className="text-[10px] font-normal text-muted-foreground">
+                {t.hint}
+              </span>
+            </span>
+          </Button>
+        ))}
+      </div>
+      {lastDl && (
+        <p className="mt-2 text-[11px] text-emerald-700">
+          Saved {lastDl} — open the app and add from your gallery.
+        </p>
+      )}
     </div>
   );
 
@@ -220,7 +307,8 @@ export function ShareVerseButton({
         <p className="text-xs font-medium text-muted-foreground">
           Share this verse
         </p>
-        {actions}
+        {quickActions}
+        {storyTemplates}
         {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
     );
@@ -243,7 +331,8 @@ export function ShareVerseButton({
       </Button>
       {open && (
         <div className="mt-2 rounded-lg border border-border bg-background p-2 shadow-sm">
-          {actions}
+          {quickActions}
+          {storyTemplates}
           {error && (
             <p className="mt-1.5 text-xs text-destructive">{error}</p>
           )}

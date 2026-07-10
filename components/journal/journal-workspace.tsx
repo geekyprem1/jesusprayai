@@ -41,6 +41,17 @@ import type { JournalEntryView, PrayerCategory } from "@/types/journal";
 import { CATEGORIES } from "@/lib/ai/schemas";
 import { VoicePrayerButton } from "@/components/journal/voice-prayer-button";
 
+const MOODS = [
+  { id: "peaceful", label: "Peaceful", emoji: "😌" },
+  { id: "grateful", label: "Grateful", emoji: "🙏" },
+  { id: "hopeful", label: "Hopeful", emoji: "🌅" },
+  { id: "anxious", label: "Anxious", emoji: "😟" },
+  { id: "heavy", label: "Heavy", emoji: "😔" },
+  { id: "joyful", label: "Joyful", emoji: "😊" },
+] as const;
+
+type MoodId = (typeof MOODS)[number]["id"] | "";
+
 function formatDate(iso: string) {
   try {
     return new Intl.DateTimeFormat(undefined, {
@@ -50,6 +61,20 @@ function formatDate(iso: string) {
   } catch {
     return iso;
   }
+}
+
+function wordStats(text: string) {
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const minutes = Math.max(1, Math.ceil(words / 200));
+  return {
+    words,
+    reading:
+      words === 0
+        ? "—"
+        : words < 40
+          ? "< 1 min read"
+          : `~${minutes} min read`,
+  };
 }
 
 function toViewFromLocal(e: LocalJournalEntry): JournalEntryView {
@@ -71,6 +96,10 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
   const [entries, setEntries] = useState<JournalEntryView[]>([]);
   const [body, setBody] = useState("");
   const [editBody, setEditBody] = useState("");
+  const [mood, setMood] = useState<MoodId>("");
+  const [draftCategory, setDraftCategory] =
+    useState<PrayerCategory>("uncategorized");
+  const [tagsInput, setTagsInput] = useState("");
   const [hydrated, setHydrated] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -83,6 +112,19 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
   const selected = useMemo(
     () => entries.find((e) => e.id === selectedId) ?? null,
     [entries, selectedId]
+  );
+
+  const draftStats = useMemo(() => wordStats(body), [body]);
+  const editStats = useMemo(() => wordStats(editBody), [editBody]);
+
+  const draftTags = useMemo(
+    () =>
+      tagsInput
+        .split(/[,#]/)
+        .map((t) => t.trim().toLowerCase())
+        .filter(Boolean)
+        .slice(0, 8),
+    [tagsInput]
   );
 
   const loadCloud = useCallback(async () => {
@@ -238,28 +280,52 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
     }
   }, [selected, mode, loadVerses]);
 
+  function composeBodyWithMeta(raw: string) {
+    const parts: string[] = [];
+    if (mood) {
+      const m = MOODS.find((x) => x.id === mood);
+      if (m) parts.push(`${m.emoji} ${m.label}`);
+    }
+    if (draftTags.length) {
+      parts.push(draftTags.map((t) => `#${t}`).join(" "));
+    }
+    if (parts.length) {
+      return `${parts.join(" · ")}\n\n${raw.trim()}`;
+    }
+    return raw.trim();
+  }
+
+  function resetComposer() {
+    setBody("");
+    setMood("");
+    setDraftCategory("uncategorized");
+    setTagsInput("");
+  }
+
   async function handleSave() {
     if (!body.trim()) return;
     setSaving(true);
     setStatus(null);
 
+    const plain = composeBodyWithMeta(body);
     const clientId = crypto.randomUUID();
     const draft: OfflineDraft = {
       clientId,
-      body: body.trim(),
+      body: plain,
       updatedAt: new Date().toISOString(),
       syncState: "pending",
     };
     await upsertDraft(draft);
 
     if (!cloudEnabled || !navigator.onLine) {
-      const local = createEntry(body);
+      const local = createEntry(plain);
       local.id = clientId;
+      local.category = draftCategory;
       const view = toViewFromLocal(local);
       view.clientId = clientId;
       view.syncState = "pending";
       setEntries((prev) => [view, ...prev]);
-      setBody("");
+      resetComposer();
       setSelectedId(view.id);
       setStatus(
         !cloudEnabled
@@ -272,25 +338,27 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
 
     // Save first — AI is best-effort after
     const result = await createPrayerEntry({
-      bodyPlain: body.trim(),
+      bodyPlain: plain,
       clientId,
+      category: draftCategory,
     });
 
     if (!result.ok || !result.data) {
-      const local = createEntry(body);
+      const local = createEntry(plain);
       local.id = clientId;
+      local.category = draftCategory;
       setEntries((prev) => [
         { ...toViewFromLocal(local), clientId, syncState: "pending" },
         ...prev,
       ]);
-      setBody("");
+      resetComposer();
       setStatus(result.error ?? "Save failed — kept offline draft.");
       setSaving(false);
       return;
     }
 
     await removeDraft(clientId);
-    setBody("");
+    resetComposer();
     await loadCloud();
     setSelectedId(result.data.id);
     setStatus("Entry saved. Running AI…");
@@ -389,7 +457,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
             </span>
           )}
           <span className="hidden sm:inline">·</span>
-          <span>Storage: {mode === "cloud" ? "Supabase" : "Local"}</span>
+          <span>{mode === "cloud" ? "Synced account" : "On this device"}</span>
           {aiLoading && (
             <span className="inline-flex items-center gap-1 text-primary">
               <Sparkles className="size-3.5 animate-pulse" /> AI running…
@@ -401,11 +469,86 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
           <CardHeader className="gap-1">
             <CardTitle className="text-base sm:text-lg">New prayer entry</CardTitle>
             <CardDescription className="text-xs sm:text-sm">
-              Saves first, then AI categorizes and suggests verses. If AI fails,
-              your entry still stays saved.
+              Capture the moment — mood, category, and tags help AI know you better.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
+            <div className="grid gap-2">
+              <p className="text-xs font-medium text-muted-foreground">
+                😊 Mood
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {MOODS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() =>
+                      setMood((prev) => (prev === m.id ? "" : m.id))
+                    }
+                    className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                      mood === m.id
+                        ? "border-primary bg-primary/10 text-foreground"
+                        : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {m.emoji} {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-1.5">
+                <label
+                  htmlFor="draft-category"
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  🙏 Category
+                </label>
+                <select
+                  id="draft-category"
+                  value={draftCategory}
+                  onChange={(e) =>
+                    setDraftCategory(e.target.value as PrayerCategory)
+                  }
+                  className="h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm capitalize outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid gap-1.5">
+                <label
+                  htmlFor="draft-tags"
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  🏷 Tags
+                </label>
+                <input
+                  id="draft-tags"
+                  value={tagsInput}
+                  onChange={(e) => setTagsInput(e.target.value)}
+                  placeholder="family, work, health"
+                  className="h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+              </div>
+            </div>
+            {draftTags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {draftTags.map((t) => (
+                  <span
+                    key={t}
+                    className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
+                  >
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            )}
+
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
@@ -413,6 +556,13 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
               rows={8}
               className="min-h-[160px] w-full resize-y rounded-lg border border-input bg-transparent px-3 py-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:min-h-[200px] sm:text-sm"
             />
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span>
+                {draftStats.words} word{draftStats.words === 1 ? "" : "s"}
+                <span className="mx-1.5">·</span>
+                {draftStats.reading}
+              </span>
+            </div>
             <VoicePrayerButton
               disabled={saving}
               onTranscript={(text) => {
@@ -482,6 +632,11 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
                 rows={6}
                 className="min-h-[140px] w-full resize-y rounded-lg border border-input bg-transparent px-3 py-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:text-sm"
               />
+              <p className="text-xs text-muted-foreground">
+                {editStats.words} word{editStats.words === 1 ? "" : "s"}
+                <span className="mx-1.5">·</span>
+                {editStats.reading}
+              </p>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
                 {mode === "cloud" && selected.syncState === "synced" && (
                   <Button
@@ -567,9 +722,16 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
           <p className="text-sm text-muted-foreground">Loading…</p>
         )}
         {hydrated && entries.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No entries yet. Write your first prayer.
-          </p>
+          <Card className="border-dashed">
+            <CardHeader className="p-3">
+              <CardTitle className="text-sm">
+                Your first prayer starts here
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Even one honest sentence before God is enough.
+              </CardDescription>
+            </CardHeader>
+          </Card>
         )}
         <ul className="scroll-touch flex max-h-[40vh] flex-col gap-2 overflow-y-auto pb-1 md:max-h-[calc(100vh-12rem)]">
           {entries.map((entry) => (
