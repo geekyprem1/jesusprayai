@@ -1,10 +1,10 @@
 /**
- * Generates PrayNote PWA PNG icons from the source logo.
- * Source: public/icons/_source-logo.png (or SOURCE_LOGO env path)
+ * Generates crisp PrayNote PWA icons (gold-border rounded square + cream cross).
+ * Full-bleed canvas — no transparent outer padding (OS masks cleanly).
  * Run: npm run pwa:icons
  */
 import sharp from "sharp";
-import { mkdir, access, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,118 +13,116 @@ const root = path.join(__dirname, "..");
 const outDir = path.join(root, "public", "icons");
 const publicDir = path.join(root, "public");
 
-const NAVY = { r: 16, g: 35, b: 63, alpha: 1 }; // #10233F
+const NAVY = "#10233F";
+const CREAM = "#F9F5EC";
+const GOLD = "#D4B86A";
+
 const SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
 
-const defaultSource = path.join(outDir, "_source-logo.png");
-const sourcePath = process.env.SOURCE_LOGO
-  ? path.resolve(process.env.SOURCE_LOGO)
-  : defaultSource;
-
-async function ensureSource() {
-  try {
-    await access(sourcePath);
-  } catch {
-    throw new Error(
-      `Source logo not found: ${sourcePath}\nPlace logo at public/icons/_source-logo.png or set SOURCE_LOGO=...`,
-    );
-  }
-}
-
-/** Resize source to exact square PNG (any purpose icons). */
-async function writeIcon(filePath, size) {
-  await sharp(sourcePath)
-    .resize(size, size, {
-      fit: "cover",
-      position: "centre",
-      kernel: sharp.kernel.lanczos3,
-    })
-    .png({ compressionLevel: 9 })
-    .toFile(filePath);
-  console.log("wrote", path.relative(root, filePath));
-}
-
 /**
- * Maskable: keep ~20% safe zone so OS masks don't clip the mark.
- * Scale logo to 80% of canvas, center on navy.
+ * Full-bleed logo: navy canvas, gold-ring rounded tile, cream cross, gold tip.
+ * Drawn at `size` so every resolution is sharp (not upscaled from 69px).
  */
-async function writeMaskable(filePath, size) {
-  const inner = Math.round(size * 0.8);
-  const logo = await sharp(sourcePath)
-    .resize(inner, inner, {
-      fit: "contain",
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-      kernel: sharp.kernel.lanczos3,
-    })
-    .png()
-    .toBuffer();
+function logoSvg(size, { maskable = false } = {}) {
+  // maskable: keep mark in ~80% safe zone
+  const pad = maskable ? size * 0.12 : size * 0.08;
+  const box = size - pad * 2;
+  const rx = box * 0.22;
+  const cx = size / 2;
+  const cy = size / 2;
+  const stroke = Math.max(box * 0.11, 4);
+  const armW = box * 0.42;
+  const armH = box * 0.52;
+  const ring = Math.max(size * 0.03, 2);
+  const tipR = Math.max(size * 0.032, 2);
+  // Cross slightly above center (classic Christian cross proportions)
+  const crossCy = cy - box * 0.02;
+  const barY = crossCy - armH * 0.18;
 
-  await sharp({
-    create: {
-      width: size,
-      height: size,
-      channels: 4,
-      background: NAVY,
-    },
-  })
-    .composite([{ input: logo, gravity: "centre" }])
-    .png({ compressionLevel: 9 })
-    .toFile(filePath);
-  console.log("wrote", path.relative(root, filePath));
-}
-
-function svgFromPngBase64(size, b64) {
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <image width="${size}" height="${size}" xlink:href="data:image/png;base64,${b64}"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  <rect width="${size}" height="${size}" fill="${NAVY}"/>
+  <rect x="${pad}" y="${pad}" width="${box}" height="${box}" rx="${rx}"
+        fill="${NAVY}" stroke="${GOLD}" stroke-width="${ring}"/>
+  <g stroke="${CREAM}" stroke-width="${stroke}" stroke-linecap="round" fill="none">
+    <line x1="${cx}" y1="${crossCy - armH / 2}" x2="${cx}" y2="${crossCy + armH / 2}"/>
+    <line x1="${cx - armW / 2}" y1="${barY}" x2="${cx + armW / 2}" y2="${barY}"/>
+  </g>
+  <circle cx="${cx}" cy="${crossCy - armH / 2}" r="${tipR}" fill="${GOLD}"/>
 </svg>`;
 }
 
+async function writePng(filePath, size, opts = {}) {
+  const svg = Buffer.from(logoSvg(size, opts));
+  await sharp(svg).png({ compressionLevel: 9 }).toFile(filePath);
+  console.log("wrote", path.relative(root, filePath));
+}
+
 async function main() {
-  await ensureSource();
   await mkdir(outDir, { recursive: true });
 
+  // Master source (high-res) for future reference
+  await writePng(path.join(outDir, "_source-logo.png"), 512);
+
   for (const size of SIZES) {
-    await writeIcon(path.join(outDir, `icon-${size}.png`), size);
+    await writePng(path.join(outDir, `icon-${size}.png`), size);
   }
 
   for (const size of [192, 512]) {
-    await writeMaskable(path.join(outDir, `maskable-${size}.png`), size);
+    await writePng(path.join(outDir, `maskable-${size}.png`), size, {
+      maskable: true,
+    });
   }
 
-  await writeIcon(path.join(outDir, "apple-touch-icon.png"), 180);
-  await writeIcon(path.join(publicDir, "favicon-32.png"), 32);
-  await writeIcon(path.join(publicDir, "favicon-16.png"), 16);
-  await writeIcon(path.join(publicDir, "icon-512.png"), 512);
+  await writePng(path.join(outDir, "apple-touch-icon.png"), 180);
+  await writePng(path.join(publicDir, "favicon-32.png"), 32);
+  await writePng(path.join(publicDir, "favicon-16.png"), 16);
+  await writePng(path.join(publicDir, "icon-512.png"), 512);
 
-  // SVG wrappers (data-URI) for mask-icon / fallbacks
-  const png512 = await sharp(sourcePath)
-    .resize(512, 512, { fit: "cover", kernel: sharp.kernel.lanczos3 })
-    .png()
-    .toBuffer();
-  const png192 = await sharp(sourcePath)
-    .resize(192, 192, { fit: "cover", kernel: sharp.kernel.lanczos3 })
-    .png()
-    .toBuffer();
+  // SVG masters
+  await writeFile(path.join(outDir, "icon.svg"), logoSvg(512), "utf8");
+  await writeFile(path.join(outDir, "icon-512.svg"), logoSvg(512), "utf8");
+  await writeFile(path.join(outDir, "icon-192.svg"), logoSvg(192), "utf8");
 
-  await writeFile(
-    path.join(outDir, "icon.svg"),
-    svgFromPngBase64(512, png512.toString("base64")),
-    "utf8",
-  );
-  await writeFile(
-    path.join(outDir, "icon-512.svg"),
-    svgFromPngBase64(512, png512.toString("base64")),
-    "utf8",
-  );
-  await writeFile(
-    path.join(outDir, "icon-192.svg"),
-    svgFromPngBase64(192, png192.toString("base64")),
-    "utf8",
-  );
-  console.log("wrote", path.relative(root, path.join(outDir, "icon.svg")));
+  // Multi-size favicon.ico
+  const p16 = await sharp(Buffer.from(logoSvg(16))).png().toBuffer();
+  const p32 = await sharp(Buffer.from(logoSvg(32))).png().toBuffer();
+  const ico = pngsToIco([
+    { size: 16, data: p16 },
+    { size: 32, data: p32 },
+  ]);
+  await writeFile(path.join(root, "app", "favicon.ico"), ico);
+  console.log("wrote app/favicon.ico");
 
-  console.log("PWA icons generated from", path.relative(root, sourcePath));
+  console.log("PWA icons generated (crisp full-bleed gold-border mark).");
+}
+
+/** Minimal PNG-in-ICO writer */
+function pngsToIco(images) {
+  const count = images.length;
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(count, 4);
+  let offset = 6 + 16 * count;
+  const dirs = [];
+  const bodies = [];
+  for (const img of images) {
+    const dir = Buffer.alloc(16);
+    const s = img.size >= 256 ? 0 : img.size;
+    dir.writeUInt8(s, 0);
+    dir.writeUInt8(s, 1);
+    dir.writeUInt8(0, 2);
+    dir.writeUInt8(0, 3);
+    dir.writeUInt16LE(1, 4);
+    dir.writeUInt16LE(32, 6);
+    dir.writeUInt32LE(img.data.length, 8);
+    dir.writeUInt32LE(offset, 12);
+    offset += img.data.length;
+    dirs.push(dir);
+    bodies.push(img.data);
+  }
+  return Buffer.concat([header, ...dirs, ...bodies]);
 }
 
 main().catch((e) => {

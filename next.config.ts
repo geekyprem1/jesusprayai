@@ -53,7 +53,11 @@ const nextConfig: NextConfig = {
             key: "Content-Type",
             value: "application/manifest+json; charset=utf-8",
           },
-          { key: "Cache-Control", value: "public, max-age=86400" },
+          // Short cache so icon/version updates reach installed PWAs faster
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
         ],
       },
       {
