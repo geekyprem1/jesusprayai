@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     title: "PrayNote",
     startupImage: [
       {
-        url: "/icons/apple-touch-icon.png?v=5",
+        url: "/icons/apple-touch-icon.png?v=6",
       },
     ],
   },
@@ -64,19 +64,19 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon-16.png?v=5", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32.png?v=5", sizes: "32x32", type: "image/png" },
-      { url: "/icons/icon-192.png?v=5", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png?v=5", sizes: "512x512", type: "image/png" },
+      { url: "/favicon-16.png?v=6", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png?v=6", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-192.png?v=6", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png?v=6", sizes: "512x512", type: "image/png" },
     ],
     apple: [
       {
-        url: "/icons/apple-touch-icon.png?v=5",
+        url: "/icons/apple-touch-icon.png?v=6",
         sizes: "180x180",
         type: "image/png",
       },
     ],
-    shortcut: ["/favicon-32.png?v=5"],
+    shortcut: ["/favicon-32.png?v=6"],
   },
   other: {
     "mobile-web-app-capable": "yes",
@@ -109,14 +109,14 @@ export default function RootLayout({
       className={`${display.variable} ${body.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=5" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=5" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=5" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=6" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=6" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=6" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="PrayNote" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="mask-icon" href="/icons/icon.svg?v=5" color="#10233F" />
+        <link rel="mask-icon" href="/icons/icon.svg?v=6" color="#10233F" />
       </head>
       <body className="min-h-full flex flex-col bg-[oklch(0.98_0.015_85)]">
         <AnalyticsProviders />

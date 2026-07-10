@@ -11,7 +11,7 @@
  *  - Requests with Authorization header
  */
 
-const VERSION = "praynote-pwa-v5";
+const VERSION = "praynote-pwa-v6";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -20,11 +20,11 @@ const PRECACHE_URLS = [
   "/",
   "/offline",
   "/manifest.webmanifest",
-  "/icons/icon-192.png?v=5",
-  "/icons/icon-512.png?v=5",
-  "/icons/maskable-192.png?v=5",
-  "/icons/apple-touch-icon.png?v=5",
-  "/favicon-32.png?v=5",
+  "/icons/icon-192.png?v=6",
+  "/icons/icon-512.png?v=6",
+  "/icons/maskable-192.png?v=6",
+  "/icons/apple-touch-icon.png?v=6",
+  "/favicon-32.png?v=6",
 ];
 
 /** Paths that must never be cached (auth tokens, APIs, mutations). */

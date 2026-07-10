@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Full navy fill survives circular OS masks -->
   <rect width="512" height="512" fill="#10233F"/>
-  <rect x="40.96" y="40.96" width="430.08" height="430.08" rx="94.6176"
-        fill="#10233F" stroke="#D4B86A" stroke-width="15.36"/>
-  <g stroke="#F9F5EC" stroke-width="47.3088" stroke-linecap="round" fill="none">
-    <line x1="256" y1="135.57760000000002" x2="256" y2="359.2192"/>
-    <line x1="165.6832" y1="207.14291200000002" x2="346.3168" y2="207.14291200000002"/>
+  <!-- Gold-border rounded tile — fully inside circle safe zone -->
+  <rect x="96.3328" y="96.3328" width="319.33439999999996" height="319.33439999999996" rx="74.3424"
+        fill="#10233F" stroke="#D4B86A" stroke-width="18.5856"/>
+  <g stroke="#F9F5EC" stroke-width="37.1712" stroke-linecap="round" fill="none">
+    <line x1="256" y1="161.38240000000002" x2="256" y2="337.1008"/>
+    <line x1="185.03680000000003" y1="217.612288" x2="326.9632" y2="217.612288"/>
   </g>
-  <circle cx="256" cy="135.57760000000002" r="16.384" fill="#D4B86A"/>
+  <circle cx="256" cy="161.38240000000002" r="13.516799999999998" fill="#D4B86A"/>
 </svg>
