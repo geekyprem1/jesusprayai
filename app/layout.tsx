@@ -9,6 +9,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { AnalyticsProviders } from "@/components/analytics/providers";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -125,6 +126,8 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <SiteFooter />
         <InstallPrompt />
+        {/* Vercel Web Analytics — enable in project dashboard */}
+        <Analytics />
       </body>
     </html>
   );

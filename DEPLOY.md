@@ -48,6 +48,8 @@ Or: Vercel Dashboard → Import `praynote` directory as root.
 | `NEXT_PUBLIC_POSTHOG_KEY` | Optional |
 | `NEXT_PUBLIC_POSTHOG_HOST` | Optional |
 | `NEXT_PUBLIC_SENTRY_DSN` | Optional |
+
+**Vercel Web Analytics:** Enable in Vercel Dashboard → Analytics. Package `@vercel/analytics` is wired in `app/layout.tsx` (`<Analytics />`).
 | `BIBLE_API_KEY` | Optional |
 
 **Do not** set Lemon Squeezy vars until Phase PAY.
