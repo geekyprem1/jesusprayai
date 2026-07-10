@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { sendWelcomeEmail } from "@/lib/email/resend";
 import { LIMITS } from "@/lib/security/limits";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { safeNextPath } from "@/lib/security/safe-next";
@@ -60,7 +61,7 @@ export async function signUp(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -72,9 +73,20 @@ export async function signUp(
     return { error: error.message };
   }
 
+  // Best-effort welcome (does not fail signup if Resend is down / unset)
+  // Skip if Supabase already created no user (e.g. duplicate soft-fail)
+  if (data.user?.email) {
+    void sendWelcomeEmail({
+      to: data.user.email,
+      displayName:
+        displayName ||
+        (data.user.user_metadata?.display_name as string | undefined),
+    }).catch(() => undefined);
+  }
+
   return {
     success:
-      "Account created. Check your email to confirm if required, then log in.",
+      "Account created. Check your email to confirm if required, then log in. We’ve also sent a welcome note if email is configured.",
   };
 }
 

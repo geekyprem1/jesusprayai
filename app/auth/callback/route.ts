@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/env";
+import {
+  isLikelyNewUser,
+  sendWelcomeEmail,
+} from "@/lib/email/resend";
 import { safeNextPath } from "@/lib/security/safe-next";
 
 /**
  * OAuth / magic-link callback — exchanges ?code= for a session cookie.
- * Configure in Supabase: Authentication → URL Configuration → Redirect URLs
- *   http://localhost:3000/auth/callback
- *   https://YOUR_DOMAIN/auth/callback
+ * New Google users also get a welcome email (best-effort).
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -26,13 +28,34 @@ export async function GET(request: Request) {
   }
 
   if (!isSupabaseConfigured()) {
-    return NextResponse.redirect(new URL("/login?error=Auth+not+configured", origin));
+    return NextResponse.redirect(
+      new URL("/login?error=Auth+not+configured", origin)
+    );
   }
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Welcome email for brand-new OAuth accounts only
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user?.email && isLikelyNewUser(user.created_at)) {
+          const meta = user.user_metadata ?? {};
+          void sendWelcomeEmail({
+            to: user.email,
+            displayName:
+              (meta.full_name as string | undefined) ||
+              (meta.name as string | undefined) ||
+              (meta.display_name as string | undefined),
+          }).catch(() => undefined);
+        }
+      } catch {
+        /* never block login on email */
+      }
+
       return NextResponse.redirect(new URL(next, origin));
     }
     const login = new URL("/login", origin);

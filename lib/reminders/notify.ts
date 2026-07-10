@@ -3,6 +3,8 @@
  * Missing keys → no-op with logged skip (cron still advances schedule).
  */
 
+import { sendResendEmail } from "@/lib/email/resend";
+
 export type NotifyPayload = {
   userId: string;
   title: string;
@@ -24,34 +26,14 @@ export async function sendReminderNotification(
     payload.channel === "push" || payload.channel === "both";
 
   if (wantEmail && payload.email) {
-    const resendKey = process.env.RESEND_API_KEY?.trim();
-    const from = process.env.RESEND_FROM_EMAIL?.trim();
-    if (resendKey && from) {
-      try {
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${resendKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from,
-            to: [payload.email],
-            subject: payload.title,
-            text: payload.body,
-          }),
-        });
-        emailed = res.ok;
-        if (!res.ok) {
-          notes.push(`email failed: ${res.status}`);
-        }
-      } catch (e) {
-        notes.push(
-          `email error: ${e instanceof Error ? e.message : "unknown"}`
-        );
-      }
-    } else {
-      notes.push("email skipped (RESEND_API_KEY / RESEND_FROM_EMAIL unset)");
+    const result = await sendResendEmail({
+      to: payload.email,
+      subject: payload.title,
+      text: payload.body,
+    });
+    emailed = result.ok;
+    if (!result.ok) {
+      notes.push(result.error ?? "email failed");
     }
   }
 
