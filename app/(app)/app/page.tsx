@@ -40,14 +40,19 @@ export default async function AppHomePage() {
   const dashboard = showInsights ? await getHomeDashboard() : null;
   const dash = dashboard?.ok ? dashboard.data : null;
 
+  // Returning = has journal history; new accounts / empty journals get first-visit copy
+  const isReturning = Boolean(dash && dash.totalEntries > 0);
+
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
       <div>
         <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-          Welcome back
+          {isReturning ? "Welcome back" : "Welcome"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground sm:text-base">
-          Your prayer life, at a glance — streak, reflections, and Scripture.
+          {isReturning
+            ? "Your prayer life, at a glance — streak, reflections, and Scripture."
+            : "Start your prayer journey — write a prayer, and AI will meet you with Scripture."}
         </p>
       </div>
 
