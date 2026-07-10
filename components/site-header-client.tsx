@@ -18,16 +18,16 @@ export function SiteHeaderClient({ email, signOutSlot }: Props) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[oklch(0.72_0.1_85/0.25)] bg-[oklch(0.98_0.015_85/0.95)] backdrop-blur-md pt-[env(safe-area-inset-top)]">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:h-16 sm:px-4">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:h-[4.25rem] sm:px-4">
         <Link
           href="/"
           onClick={close}
-          className="font-display flex min-w-0 items-center gap-2 text-base font-semibold tracking-wide text-[oklch(0.28_0.05_255)] sm:gap-2.5 sm:text-lg"
+          className="font-display flex min-w-0 items-center gap-2.5 text-lg font-semibold tracking-wide text-[oklch(0.22_0.05_255)] sm:gap-3 sm:text-xl"
         >
-          <CrossMark className="size-7 shrink-0 sm:size-8" />
-          <span className="truncate">
+          <CrossMark className="size-9 shrink-0 sm:size-10" />
+          <span className="truncate leading-none">
             PrayNote{" "}
-            <span className="font-normal italic text-[oklch(0.55_0.08_85)]">
+            <span className="font-semibold italic text-[oklch(0.48_0.1_85)]">
               AI
             </span>
           </span>

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { SignOutButton } from "@/components/app/sign-out-button";
+import { CrossMark } from "@/components/brand/cross-mark";
 import { isSupabaseConfigured } from "@/lib/env";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -15,13 +15,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       )}
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col md:flex-row">
-        <aside className="md:sticky md:top-16 md:self-start md:border-r md:border-border">
-          <div className="hidden items-center gap-2 border-b border-border px-4 py-3 md:flex">
-            <Link href="/app" className="flex items-center gap-2 font-semibold">
-              <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <BookOpen className="size-3.5" />
+        <aside className="md:sticky md:top-[4.25rem] md:self-start md:border-r md:border-border">
+          <div className="hidden items-center gap-2.5 border-b border-border px-4 py-3.5 md:flex">
+            <Link
+              href="/app"
+              className="font-display flex items-center gap-2.5 text-base font-semibold tracking-wide text-[oklch(0.22_0.05_255)]"
+            >
+              <CrossMark className="size-9 shrink-0" />
+              <span>
+                PrayNote{" "}
+                <span className="font-semibold italic text-[oklch(0.48_0.1_85)]">
+                  AI
+                </span>
               </span>
-              App
             </Link>
           </div>
           <AppSidebar />

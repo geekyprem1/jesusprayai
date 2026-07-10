@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <rect width="512" height="512" fill="#10233F"/>
-  <rect x="14.335999999999999" y="14.335999999999999" width="483.328" height="483.328" rx="112.64" fill="#10233F" stroke="#D4B86A" stroke-width="7.68" opacity="0.9"/>
-  <g stroke="#F9F5EC" stroke-width="35.84" stroke-linecap="round" fill="none">
-    <line x1="256" y1="137.728" x2="256" y2="374.272"/>
-    <line x1="165.6832" y1="227.61472" x2="346.3168" y2="227.61472"/>
+  <rect x="40.96" y="40.96" width="430.08" height="430.08" rx="94.6176"
+        fill="#10233F" stroke="#D4B86A" stroke-width="14.336"/>
+  <g stroke="#F9F5EC" stroke-width="51.2" stroke-linecap="round" fill="none">
+    <line x1="256" y1="131.2768" x2="256" y2="380.7232"/>
+    <line x1="152.7808" y1="221.077504" x2="359.2192" y2="221.077504"/>
   </g>
+  <circle cx="256" cy="131.2768" r="17.92" fill="#D4B86A"/>
 </svg>

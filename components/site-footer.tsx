@@ -6,9 +6,12 @@ export function SiteFooter() {
     <footer className="border-t border-[oklch(0.72_0.1_85/0.3)] bg-[oklch(0.26_0.05_255)] text-[oklch(0.9_0.02_85)] pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto grid max-w-6xl gap-8 px-3 py-10 sm:grid-cols-2 sm:px-4 sm:py-12 lg:grid-cols-4">
         <div className="space-y-3 sm:col-span-2 lg:col-span-1">
-          <div className="font-display flex items-center gap-2 text-lg font-semibold">
-            <CrossMark className="size-7 brightness-125" light />
-            PrayNote AI
+          <div className="font-display flex items-center gap-3 text-xl font-semibold">
+            <CrossMark className="size-10 sm:size-11" light />
+            <span>
+              PrayNote{" "}
+              <span className="italic text-[oklch(0.82_0.1_85)]">AI</span>
+            </span>
           </div>
           <p className="max-w-md text-sm leading-relaxed text-[oklch(0.82_0.02_85)]">
             A quiet place for Christians to journal prayer, meet Scripture, and
