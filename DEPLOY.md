@@ -51,8 +51,10 @@ Or: Vercel Dashboard → Import `praynote` directory as root.
 `vercel.json` schedules:
 
 ```
-GET /api/cron/reminders  every 5 minutes
+GET /api/cron/reminders  daily at 12:00 UTC
 ```
+
+> **Hobby plan:** Vercel only allows **once-per-day** crons. Upgrade to Pro for `*/5` (every 5 min) if you need tighter reminder delivery.
 
 Vercel sends `Authorization: Bearer $CRON_SECRET` when `CRON_SECRET` is set.
 
