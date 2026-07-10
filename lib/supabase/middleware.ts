@@ -1,12 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured } from "@/lib/env";
+import { safeNextPath } from "@/lib/security/safe-next";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   if (!isSupabaseConfigured()) {
-    // No keys yet: allow browsing app UI (Phase 1 demo). Auth actions will show setup message.
+    // Production must never run without auth backend
+    if (process.env.NODE_ENV === "production") {
+      return new NextResponse(
+        "Service misconfigured: authentication is not available.",
+        { status: 503, headers: { "Content-Type": "text/plain" } }
+      );
+    }
+    // Local demo without keys: allow browsing; auth actions show setup message.
     return supabaseResponse;
   }
 
@@ -44,7 +52,7 @@ export async function updateSession(request: NextRequest) {
   if (isAppRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
-    redirectUrl.searchParams.set("next", path);
+    redirectUrl.searchParams.set("next", safeNextPath(path, "/app"));
     return NextResponse.redirect(redirectUrl);
   }
 

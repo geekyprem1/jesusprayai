@@ -9,6 +9,7 @@ Payments (Lemon Squeezy) are **not** part of this deploy.
    - `002_prayer_entries.sql`
    - `003_phase3_ai_requests.sql`
    - `004_reminders.sql`
+   - `005_security_hardening.sql` (plan_tier lock, AI quotas, RLS fixes)
 2. OpenRouter key + model env
 3. Vercel account linked to this repo / folder
 

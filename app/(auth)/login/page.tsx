@@ -8,6 +8,7 @@ import {
 import { AuthForm } from "@/components/auth/auth-form";
 import { signIn } from "@/app/auth/actions";
 import { isSupabaseConfigured } from "@/lib/env";
+import { safeNextPath } from "@/lib/security/safe-next";
 
 type Props = {
   searchParams: Promise<{ next?: string }>;
@@ -37,7 +38,11 @@ export default async function LoginPage({ searchParams }: Props) {
               add keys to <code className="text-xs">.env.local</code>.
             </p>
           )}
-          <AuthForm mode="login" action={signIn} nextPath={next || "/app"} />
+          <AuthForm
+            mode="login"
+            action={signIn}
+            nextPath={safeNextPath(next, "/app")}
+          />
         </CardContent>
       </Card>
     </div>

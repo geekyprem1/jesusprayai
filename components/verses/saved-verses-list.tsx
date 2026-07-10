@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ShareVerseButton } from "@/components/verses/share-verse-button";
 
 function formatDate(iso: string) {
   try {
@@ -148,6 +149,14 @@ export function SavedVersesList() {
                         : ""}
                     </p>
                   )}
+                  <ShareVerseButton
+                    variant="full"
+                    verse={{
+                      reference: v.reference,
+                      verseText: v.verse_text,
+                      translation: v.translation,
+                    }}
+                  />
                 </CardContent>
               </Card>
             </li>

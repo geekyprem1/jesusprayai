@@ -5,6 +5,7 @@ import {
   Church,
   Heart,
   Mic,
+  Share2,
   Shield,
   Sparkles,
 } from "lucide-react";
@@ -12,27 +13,27 @@ import {
 const features = [
   {
     icon: Heart,
-    title: "Smart prayer journal",
+    title: "Write your prayers",
     description:
-      "Pour out gratitude, confession, petition, and praise. AI gently sorts each entry so your spiritual life stays ordered before the Lord.",
+      "Gratitude, worry, confession, praise — pour it out in a quiet place made for you. Private by design.",
   },
   {
     icon: BookMarked,
-    title: "Scripture that meets you",
+    title: "Meet Scripture",
     description:
-      "Every prayer can be linked to living Word — relevant verses suggested so your journaling always returns to the Bible.",
+      "Every prayer can be linked to living Word. Gentle verse suggestions so journaling always returns to the Bible.",
+  },
+  {
+    icon: Share2,
+    title: "Share a verse",
+    description:
+      "Send a beautiful verse card to WhatsApp or Facebook — encourage family and friends without sharing your private prayers.",
   },
   {
     icon: Sparkles,
-    title: "Answered prayer archive",
+    title: "Remember answered prayer",
     description:
       "Mark what God has done. Build a personal timeline of faithfulness you can revisit in dry seasons.",
-  },
-  {
-    icon: Mic,
-    title: "Voice when words fail",
-    description:
-      "Speak your prayer when typing feels heavy. Transcription is coming so nothing said in secret is lost.",
   },
 ];
 
@@ -40,17 +41,17 @@ const steps = [
   {
     n: "01",
     title: "Write or whisper",
-    text: "Capture the cry of your heart in a quiet journal made for believers.",
+    text: "Capture the cry of your heart — on your phone, even on slow data.",
   },
   {
     n: "02",
     title: "Meet the Word",
-    text: "Receive Scripture that answers, comforts, and corrects with grace.",
+    text: "Receive Scripture that comforts, strengthens, and points you to Jesus.",
   },
   {
     n: "03",
-    title: "Remember His hand",
-    text: "Track requests and celebrate answered prayer — for your faith and your family.",
+    title: "Share & remember",
+    text: "Share a verse card with someone you love. Mark prayers God has answered.",
   },
 ];
 
@@ -95,24 +96,21 @@ export default function HomePage() {
         <div className="relative z-10 order-2 flex flex-col items-start text-left md:order-1">
           <p className="animate-faith-up delay-100 mb-3 inline-flex max-w-full items-center gap-2 rounded-full border border-[oklch(0.72_0.1_85/0.45)] bg-white/70 px-3 py-1 text-[10px] font-medium tracking-wide text-[oklch(0.4_0.05_255)] uppercase sm:mb-4 sm:text-xs">
             <Church className="size-3.5 shrink-0 text-[oklch(0.55_0.08_85)]" />
-            For the body of Christ
+            From the Eternal Faith team
           </p>
 
           <h1 className="font-display animate-faith-up delay-200 max-w-xl text-[1.85rem] leading-[1.15] font-semibold tracking-tight text-[oklch(0.24_0.05_255)] xs:text-4xl sm:text-5xl lg:text-[3.25rem]">
-            A sacred space to pray,{" "}
+            Your private prayer journal —{" "}
             <span className="italic text-[oklch(0.42_0.07_255)]">
-              journal,
+              with Scripture
             </span>{" "}
-            and walk with{" "}
-            <span className="bg-gradient-to-r from-[oklch(0.55_0.1_85)] to-[oklch(0.42_0.08_70)] bg-clip-text text-transparent">
-              Scripture
-            </span>
+            that meets you
           </h1>
 
           <p className="animate-faith-up delay-300 mt-4 max-w-lg text-sm leading-relaxed text-[oklch(0.4_0.03_255)] sm:mt-5 sm:text-base md:text-lg">
-            PrayNote AI is built for Christians who want more than a notes app —
-            a prayer journal that listens with care and always points you back
-            to the Word of God.
+            Write what&apos;s on your heart. See Bible verses that speak to your
+            prayer. Share a verse with someone who needs hope — without sharing
+            your private prayers.
           </p>
 
           <div className="animate-faith-up delay-400 mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
@@ -120,25 +118,25 @@ export default function HomePage() {
               href="/signup"
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[oklch(0.28_0.05_255)] px-6 py-3 text-sm font-medium text-[oklch(0.97_0.01_85)] shadow-md transition hover:bg-[oklch(0.34_0.05_255)] sm:w-auto sm:min-h-0 sm:py-2.5"
             >
-              Begin your free journal
+              Start free — no card needed
             </Link>
             <Link
               href="/app"
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[oklch(0.72_0.1_85/0.55)] bg-white/80 px-6 py-3 text-sm font-medium text-[oklch(0.28_0.05_255)] transition hover:bg-white sm:w-auto sm:min-h-0 sm:py-2.5"
             >
-              Enter the app
+              Open the app
             </Link>
           </div>
 
           <p className="animate-faith-up delay-500 mt-4 text-[11px] leading-relaxed tracking-wide text-[oklch(0.5_0.03_255)] sm:text-xs">
-            Free to start · Built with reverence · Your prayers stay private
+            Free to start · Works on your phone · Prayers stay private
           </p>
         </div>
       </section>
 
       <div className="gold-divider mx-auto w-full max-w-4xl" />
 
-      {/* SCRIPTURE BAND — solid navy + image so quote never white-on-white */}
+      {/* SCRIPTURE BAND */}
       <section
         id="scripture"
         className="relative mt-10 overflow-hidden py-16 text-center"
@@ -158,7 +156,7 @@ export default function HomePage() {
         />
         <div className="animate-faith-in relative z-10 mx-auto max-w-3xl px-3 sm:px-4">
           <p className="mb-3 text-[10px] tracking-[0.2em] text-[#e0c57a] uppercase sm:text-xs sm:tracking-[0.25em]">
-            The heart of the product
+            Why we built this
           </p>
           <blockquote className="font-display text-xl leading-relaxed font-medium text-[#f7f3eb] italic sm:text-2xl md:text-3xl lg:text-4xl">
             “Be careful for nothing; but in every thing by prayer and
@@ -172,17 +170,20 @@ export default function HomePage() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" className="mx-auto w-full max-w-6xl px-3 py-12 sm:px-4 sm:py-16 md:py-20">
+      <section
+        id="features"
+        className="mx-auto w-full max-w-6xl px-3 py-12 sm:px-4 sm:py-16 md:py-20"
+      >
         <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-12">
           <p className="mb-2 text-[10px] font-medium tracking-[0.2em] text-[oklch(0.55_0.08_85)] uppercase sm:text-xs">
-            Daily devotion tools
+            Built for real life faith
           </p>
           <h2 className="font-display text-2xl font-semibold text-[oklch(0.24_0.05_255)] sm:text-3xl md:text-4xl">
-            Formed for prayer, anchored in the Word
+            Prayer that points to Scripture
           </h2>
           <p className="mt-3 text-sm text-[oklch(0.42_0.03_255)] sm:text-base">
-            Every feature is shaped for believers who want technology to serve
-            faith — not replace silence, community, or Scripture.
+            Not a social feed. Not noise. Just you, the Word, and a place to
+            remember His faithfulness — then share hope with others.
           </p>
         </div>
 
@@ -199,10 +200,10 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.22_0.05_255/0.7)] to-transparent" />
             <div className="absolute right-0 bottom-0 left-0 p-4 text-white sm:p-6">
               <p className="font-display text-xl font-medium sm:text-2xl">
-                Your closet of prayer — now with gentle AI
+                Your closet of prayer — with gentle AI
               </p>
               <p className="mt-1 text-xs text-white/85 sm:text-sm">
-                Private by design. Christ-centered by purpose.
+                Private prayers. Shareable verses. Christ at the center.
               </p>
             </div>
           </div>
@@ -233,7 +234,7 @@ export default function HomePage() {
       <section className="border-y border-[oklch(0.72_0.1_85/0.25)] bg-white/50 py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-3 sm:px-4">
           <h2 className="font-display mb-8 text-center text-2xl font-semibold text-[oklch(0.24_0.05_255)] sm:mb-10 sm:text-3xl">
-            A simple rhythm of grace
+            Three simple steps
           </h2>
           <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
             {steps.map((step, i) => (
@@ -263,18 +264,18 @@ export default function HomePage() {
           {[
             {
               icon: Shield,
-              title: "Private prayers",
-              text: "Your journal is yours. We treat prayer content as sacred, not content marketing.",
+              title: "Your prayers stay private",
+              text: "This is a journal, not a public wall. We treat prayer as sacred — never content for ads.",
             },
             {
               icon: BookMarked,
-              title: "Bible-first AI",
-              text: "AI suggests categories and verses — it never replaces reading Scripture yourself.",
+              title: "Bible first, AI second",
+              text: "AI only helps with categories and verse ideas. It never replaces reading Scripture yourself.",
             },
             {
-              icon: Church,
-              title: "For real discipleship",
-              text: "Made for daily Christians, small groups, and anyone learning to pray with the Word.",
+              icon: Mic,
+              title: "Made for your phone",
+              text: "Built for busy days, slow data, and quiet moments — from Lagos to Manila and beyond.",
             },
           ].map((item, i) => (
             <div
@@ -306,12 +307,15 @@ export default function HomePage() {
             }}
           />
           <div className="relative z-10">
+            <p className="mb-2 text-[10px] tracking-[0.2em] text-[#e0c57a] uppercase sm:text-xs">
+              From Eternal Faith
+            </p>
             <h2 className="font-display text-2xl font-semibold sm:text-3xl md:text-4xl">
               Come and pray — He is listening
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-sm text-white/85 sm:text-base">
-              Start a free journal today. Invite Scripture into every entry.
-              Watch your answered-prayer story grow.
+              Free to start. No card needed. Write one prayer today, meet the
+              Word, and share hope with someone you love.
             </p>
             <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center">
               <Link

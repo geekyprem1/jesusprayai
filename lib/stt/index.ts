@@ -6,6 +6,8 @@
  * - browser: Web Speech API on the client (no key)
  */
 
+import { LIMITS } from "@/lib/security/limits";
+
 export type SttProvider = "none" | "openai_whisper" | "browser" | "auto";
 
 export function getSttProvider(): SttProvider {
@@ -49,7 +51,7 @@ export type TranscribeResult =
   | { ok: true; text: string; provider: "openai_whisper" }
   | { ok: false; error: string };
 
-const MAX_BYTES = 25 * 1024 * 1024; // Whisper limit ~25MB
+const MAX_BYTES = LIMITS.whisperMaxBytes;
 const MAX_DURATION_HINT = "Keep recordings under ~2 minutes for best results.";
 
 /**

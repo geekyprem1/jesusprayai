@@ -7,6 +7,8 @@ import { isOpenRouterConfigured } from "@/lib/openrouter";
 import { requireUser } from "@/lib/auth/require-user";
 import type { PrayerCategory } from "@/types/journal";
 import { CATEGORIES } from "@/lib/ai/schemas";
+import { consumeAiQuota } from "@/lib/security/ai-quota";
+import { LIMITS } from "@/lib/security/limits";
 
 export type AiActionResult<T = null> = {
   ok: boolean;
@@ -67,6 +69,13 @@ export async function runAiForEntry(
     };
   }
 
+  const bodyPlain = String(entry.body_plain ?? "").slice(0, LIMITS.prayerBodyMax);
+
+  const quota = await consumeAiQuota(supabase, user.id, "ai");
+  if (!quota.ok) {
+    return { ok: false, error: quota.error, partial: true };
+  }
+
   const warnings: string[] = [];
   let category = entry.category as PrayerCategory;
   let categorySource = entry.category_source as "ai" | "user";
@@ -75,7 +84,7 @@ export async function runAiForEntry(
   if (entry.category_source !== "user" || entry.category === "uncategorized") {
     try {
       const result = await Promise.race([
-        categorizePrayerText(entry.body_plain),
+        categorizePrayerText(bodyPlain),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("AI categorize timeout")), 8000)
         ),
@@ -101,7 +110,7 @@ export async function runAiForEntry(
   let verses: EntryVerseRow[] = [];
   try {
     const resolved = await Promise.race([
-      resolveVerseSuggestions(entry.body_plain, "KJV", supabase),
+      resolveVerseSuggestions(bodyPlain, "KJV", supabase),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("AI verse timeout")), 15000)
       ),

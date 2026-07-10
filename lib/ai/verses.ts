@@ -105,15 +105,19 @@ export async function resolveVerseSuggestions(
     });
   }
 
+  // Cache writes locked down (migration 005) — only service_role can write.
+  // User client upserts are best-effort and expected to fail silently.
   if (supabase && suggest.topics.length && resolved.length) {
     const key = verseCacheKey(suggest.topics, translation);
     const expires = new Date();
     expires.setDate(expires.getDate() + 7);
-    await supabase.from("verse_cache").upsert({
+    const { error: cacheErr } = await supabase.from("verse_cache").upsert({
       cache_key: key,
       payload: resolved,
       expires_at: expires.toISOString(),
     });
+    // Expected after migration 005 (client writes disabled)
+    void cacheErr;
   }
 
   return resolved;

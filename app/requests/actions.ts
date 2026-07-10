@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/require-user";
+import { LIMITS } from "@/lib/security/limits";
 
 export type RequestStatus = "pending" | "ongoing" | "answered";
 export type RequestCategory =
@@ -70,6 +71,19 @@ export async function createPrayerRequest(input: {
 }): Promise<ActionResult<PrayerRequest>> {
   const title = input.title.trim();
   if (!title) return { ok: false, error: "Title is required." };
+  if (title.length > LIMITS.requestTitleMax) {
+    return {
+      ok: false,
+      error: `Title is too long (max ${LIMITS.requestTitleMax} characters).`,
+    };
+  }
+  const description = input.description?.trim() || "";
+  if (description.length > LIMITS.requestDescriptionMax) {
+    return {
+      ok: false,
+      error: `Description is too long (max ${LIMITS.requestDescriptionMax} characters).`,
+    };
+  }
 
   const auth = await requireUser();
   if ("errorMessage" in auth) {
@@ -82,7 +96,7 @@ export async function createPrayerRequest(input: {
     .insert({
       user_id: user.id,
       title,
-      description: input.description?.trim() || null,
+      description: description || null,
       category: input.category ?? "other",
       status: "pending",
     })

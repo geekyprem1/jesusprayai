@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bookmark, Cloud, CloudOff, Sparkles, Trash2 } from "lucide-react";
+import { ShareVerseButton } from "@/components/verses/share-verse-button";
 import {
   createPrayerEntry,
   deletePrayerEntry,
@@ -539,6 +540,15 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
                       <p className="mt-2 text-sm leading-relaxed break-words">
                         {v.verse_text}
                       </p>
+                      <div className="mt-2">
+                        <ShareVerseButton
+                          verse={{
+                            reference: v.reference,
+                            verseText: v.verse_text,
+                            translation: v.translation,
+                          }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

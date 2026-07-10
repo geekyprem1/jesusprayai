@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     template: "%s · PrayNote AI",
   },
   description:
-    "A Christian prayer journal that helps you write prayers, connect them to Scripture, and remember what God has answered.",
+    "Private Christian prayer journal from Eternal Faith. Write prayers, meet Scripture, share verse cards on WhatsApp — free to start.",
   applicationName: "PrayNote AI",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

@@ -3,6 +3,10 @@
 import { redirect } from "next/navigation";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { LIMITS } from "@/lib/security/limits";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { safeNextPath } from "@/lib/security/safe-next";
+import { headers } from "next/headers";
 
 export type AuthState = {
   error?: string;
@@ -14,6 +18,15 @@ function notConfigured(): AuthState {
     error:
       "Supabase is not configured yet. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to praynote/.env.local, then restart the dev server.",
   };
+}
+
+async function authRateLimitKey(email: string): Promise<string> {
+  const h = await headers();
+  const ip =
+    h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    h.get("x-real-ip")?.trim() ||
+    "unknown";
+  return `auth:${ip}:${email.toLowerCase().slice(0, 64)}`;
 }
 
 export async function signUp(
@@ -29,8 +42,21 @@ export async function signUp(
   if (!email || !password) {
     return { error: "Email and password are required." };
   }
-  if (password.length < 6) {
-    return { error: "Password must be at least 6 characters." };
+  if (password.length < LIMITS.passwordMinLength) {
+    return {
+      error: `Password must be at least ${LIMITS.passwordMinLength} characters.`,
+    };
+  }
+
+  const rl = rateLimit(
+    await authRateLimitKey(email),
+    LIMITS.authPerIpPer15Min,
+    15 * 60 * 1000
+  );
+  if (!rl.ok) {
+    return {
+      error: `Too many attempts. Try again in ${rl.retryAfterSec}s.`,
+    };
   }
 
   const supabase = await createClient();
@@ -60,10 +86,21 @@ export async function signIn(
 
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "/app");
+  const next = safeNextPath(formData.get("next"), "/app");
 
   if (!email || !password) {
     return { error: "Email and password are required." };
+  }
+
+  const rl = rateLimit(
+    await authRateLimitKey(email),
+    LIMITS.authPerIpPer15Min,
+    15 * 60 * 1000
+  );
+  if (!rl.ok) {
+    return {
+      error: `Too many attempts. Try again in ${rl.retryAfterSec}s.`,
+    };
   }
 
   const supabase = await createClient();
@@ -76,7 +113,7 @@ export async function signIn(
     return { error: error.message };
   }
 
-  redirect(next.startsWith("/") ? next : "/app");
+  redirect(next);
 }
 
 export async function signOut(): Promise<void> {

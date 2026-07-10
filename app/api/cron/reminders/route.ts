@@ -69,9 +69,10 @@ export async function GET(request: Request) {
     });
   }
 
+  // Do not return per-user identifiers in production responses
   return NextResponse.json({
     ok: true,
     processed: results.length,
-    results,
+    ...(process.env.NODE_ENV !== "production" ? { results } : {}),
   });
 }

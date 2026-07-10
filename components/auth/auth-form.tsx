@@ -52,8 +52,8 @@ export function AuthForm({ mode, action, nextPath = "/app" }: Props) {
           name="password"
           type="password"
           required
-          minLength={6}
-          placeholder="••••••••"
+          minLength={10}
+          placeholder="At least 10 characters"
           autoComplete={mode === "login" ? "current-password" : "new-password"}
         />
       </div>
@@ -73,6 +73,33 @@ export function AuthForm({ mode, action, nextPath = "/app" }: Props) {
               Go to login
             </Link>
           )}
+        </p>
+      )}
+
+      {mode === "signup" && (
+        <p className="text-center text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
+          By creating an account you agree to our{" "}
+          <Link
+            href="/terms"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Terms
+          </Link>
+          ,{" "}
+          <Link
+            href="/privacy"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          , and{" "}
+          <Link
+            href="/disclaimer"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Disclaimer
+          </Link>
+          .
         </p>
       )}
 

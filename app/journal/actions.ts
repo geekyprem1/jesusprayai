@@ -5,6 +5,7 @@ import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import type { PrayerCategory, PrayerEntry } from "@/types/journal";
+import { LIMITS } from "@/lib/security/limits";
 
 export type JournalActionResult<T = null> = {
   ok: boolean;
@@ -74,6 +75,12 @@ export async function createPrayerEntry(input: {
   if (!bodyPlain) {
     return { ok: false, error: "Prayer text is required." };
   }
+  if (bodyPlain.length > LIMITS.prayerBodyMax) {
+    return {
+      ok: false,
+      error: `Prayer is too long (max ${LIMITS.prayerBodyMax} characters).`,
+    };
+  }
 
   const auth = await requireUser();
   if ("errorMessage" in auth) {
@@ -81,7 +88,9 @@ export async function createPrayerEntry(input: {
   }
 
   const { supabase, user } = auth;
-  const bodyHtml = (input.bodyHtml ?? bodyPlain).trim();
+  const bodyHtml = (input.bodyHtml ?? bodyPlain)
+    .trim()
+    .slice(0, LIMITS.prayerBodyMax);
   const category = input.category ?? "uncategorized";
   const clientId = input.clientId ?? crypto.randomUUID();
 
@@ -140,6 +149,12 @@ export async function updatePrayerEntry(input: {
   if (!bodyPlain) {
     return { ok: false, error: "Prayer text is required." };
   }
+  if (bodyPlain.length > LIMITS.prayerBodyMax) {
+    return {
+      ok: false,
+      error: `Prayer is too long (max ${LIMITS.prayerBodyMax} characters).`,
+    };
+  }
 
   const auth = await requireUser();
   if ("errorMessage" in auth) {
@@ -147,7 +162,9 @@ export async function updatePrayerEntry(input: {
   }
 
   const { supabase, user } = auth;
-  const bodyHtml = (input.bodyHtml ?? bodyPlain).trim();
+  const bodyHtml = (input.bodyHtml ?? bodyPlain)
+    .trim()
+    .slice(0, LIMITS.prayerBodyMax);
 
   const { data, error } = await supabase
     .from("prayer_entries")

@@ -3,6 +3,7 @@
 import { requireUser } from "@/lib/auth/require-user";
 import { isOpenRouterConfigured } from "@/lib/openrouter";
 import { createOpenRouterClient, getChatModel } from "@/lib/openrouter";
+import { consumeAiQuota } from "@/lib/security/ai-quota";
 
 export type WeeklyInsight = {
   weekStart: string;
@@ -84,16 +85,20 @@ export async function getWeeklyInsight(): Promise<{
 
   let encouragement: string | null = null;
   if (isOpenRouterConfigured() && entryCount > 0) {
-    try {
-      encouragement = await generateEncouragement({
-        entryCount,
-        categoryCounts,
-        topCategory,
-        answeredCount: answeredCount ?? 0,
-      });
-    } catch {
-      encouragement = null;
+    const quota = await consumeAiQuota(supabase, user.id, "ai");
+    if (quota.ok) {
+      try {
+        encouragement = await generateEncouragement({
+          entryCount,
+          categoryCounts,
+          topCategory,
+          answeredCount: answeredCount ?? 0,
+        });
+      } catch {
+        encouragement = null;
+      }
     }
+    // If quota exceeded, fall through to static encouragement below
   }
 
   if (!encouragement && entryCount === 0) {
