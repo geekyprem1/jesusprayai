@@ -92,8 +92,7 @@ export function ReminderSettings() {
       <CardHeader>
         <CardTitle className="text-base">Daily prayer reminder</CardTitle>
         <CardDescription>
-          Cron checks every 5 minutes on Vercel. Email needs Resend keys; push
-          needs VAPID (optional).
+          Get a gentle nudge each day at the time that works for you.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -146,7 +145,7 @@ export function ReminderSettings() {
             className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm outline-none"
           >
             <option value="email">Email</option>
-            <option value="push">Push (needs VAPID)</option>
+            <option value="push">Push notification</option>
             <option value="both">Email + push</option>
             <option value="none">None</option>
           </select>

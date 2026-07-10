@@ -32,8 +32,8 @@ export default function SettingsPage() {
           <CardTitle className="text-base">Account</CardTitle>
           <CardDescription>
             {configured
-              ? "Signed in via Supabase Auth."
-              : "Supabase not configured — add keys to enable accounts."}
+              ? "You're signed in to your account."
+              : "Sign in to sync your account across devices."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -48,7 +48,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="text-base">Reminders</CardTitle>
             <CardDescription>
-              Available after Supabase is configured and you log in.
+              Sign in to set up daily prayer reminders.
             </CardDescription>
           </CardHeader>
         </Card>
