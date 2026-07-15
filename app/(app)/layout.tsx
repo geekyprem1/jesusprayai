@@ -1,8 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { SignOutButton } from "@/components/app/sign-out-button";
 import { CrossMark } from "@/components/brand/cross-mark";
 import { isSupabaseConfigured } from "@/lib/env";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const configured = isSupabaseConfigured();

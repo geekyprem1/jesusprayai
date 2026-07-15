@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import {
   Cormorant_Garamond,
   Source_Serif_4,
@@ -10,6 +10,8 @@ import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { AnalyticsProviders } from "@/components/analytics/providers";
 import { Analytics } from "@vercel/analytics/next";
+import { BRAND } from "@/lib/brand";
+import { getSiteUrl } from "@/lib/seo";
 import "./globals.css";
 
 const display = Cormorant_Garamond({
@@ -36,19 +38,51 @@ const geistMono = Geist_Mono({
   preload: false,
 });
 
-const appUrl =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
-  "https://praynote.app";
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "PrayNote AI — Prayer Journal & Bible Companion",
+    default: "PrayNote AI — Private AI Prayer Journal with Scripture",
     template: "%s · PrayNote AI",
   },
   description:
-    "Private AI-powered Christian prayer journal with Scripture. From Eternal Faith — free to start.",
-  applicationName: "PrayNote AI",
+    "Private AI-powered Christian prayer journal. Write prayers, meet Scripture, track answered prayer, and share verse cards. Free to start — from Eternal Faith.",
+  applicationName: BRAND.name,
+  authors: [{ name: BRAND.team, url: siteUrl }],
+  creator: BRAND.team,
+  publisher: BRAND.team,
+  keywords: [
+    "prayer journal",
+    "AI prayer journal",
+    "Christian prayer journal",
+    "digital prayer journal",
+    "answered prayer tracker",
+    "Bible companion",
+    "PrayNote",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: BRAND.name,
+    title: "PrayNote AI — Private AI Prayer Journal with Scripture",
+    description:
+      "Write prayers, meet Scripture, track answered prayer, and share verse cards. Free Christian prayer journal from Eternal Faith.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PrayNote AI — Private AI Prayer Journal with Scripture",
+    description:
+      "Private AI Christian prayer journal with Scripture. Free to start.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -87,17 +121,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#10233F" },
-    { media: "(prefers-color-scheme: dark)", color: "#10233F" },
-  ],
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-  viewportFit: "cover",
-  colorScheme: "light",
-};
+export { viewport } from "./viewport";
 
 export default function RootLayout({
   children,
@@ -126,7 +150,6 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <SiteFooter />
         <InstallPrompt />
-        {/* Vercel Web Analytics — enable in project dashboard */}
         <Analytics />
       </body>
     </html>

@@ -41,7 +41,7 @@ Or: Vercel Dashboard → Import `praynote` directory as root.
 | `OPENROUTER_MODEL` | Yes e.g. `deepseek/deepseek-v4-flash` |
 | `OPENROUTER_SITE_URL` | Prod URL |
 | `OPENROUTER_SITE_NAME` | `PrayNote AI` |
-| `NEXT_PUBLIC_APP_URL` | Prod URL |
+| `NEXT_PUBLIC_APP_URL` | Prod URL — use `https://praynote.church` |
 | `CRON_SECRET` | Yes (random string for `/api/cron/reminders`) |
 | `RESEND_API_KEY` | Optional (email reminders) |
 | `RESEND_FROM_EMAIL` | Optional |
@@ -105,6 +105,31 @@ App routes: login/signup show **Continue with Google** → `/auth/callback` exch
 - [ ] `/pricing` shows Coming soon on paid  
 - [ ] Settings reminder save  
 - [ ] Cron endpoint returns 401 without secret, 200 with secret  
+
+## SEO / GEO (post-deploy)
+
+Set `NEXT_PUBLIC_APP_URL=https://praynote.church` in Vercel (canonical domain).
+
+**Verify live URLs:**
+- [ ] `https://praynote.church/robots.txt` allows public pages; disallows `/app`, `/admin`, `/api`
+- [ ] `https://praynote.church/sitemap.xml` lists home, pricing, tools, guides
+- [ ] `https://praynote.church/llms.txt` loads
+- [ ] Home / tools / guides show correct title + Open Graph in [Rich Results Test](https://search.google.com/test/rich-results)
+
+**Submit for indexing:**
+1. [Google Search Console](https://search.google.com/search-console) → add `praynote.church` → Sitemaps → submit `https://praynote.church/sitemap.xml`
+2. [Bing Webmaster Tools](https://www.bing.com/webmasters) → import from GSC or add site → submit same sitemap
+3. Optional: request indexing for `/`, `/tools/verses-for/anxiety`, `/guides/how-to-start-a-prayer-journal`
+
+**Track queries:** In GSC → Performance, filter for `verses`, `prayer journal`, `prayer prompts`, `ACTS`. Refresh top guide/tool pages about every 30 days.
+
+**Free traffic pages shipped:**
+| Path | Purpose |
+|---|---|
+| `/tools/verses-for` + `/[topic]` | Long-tail Scripture SEO |
+| `/tools/random-verse` | Evergreen shares |
+| `/tools/prayer-prompts` | Blank-page prayer intent |
+| `/guides/*` | GEO answer-first content |
 
 ## PWA
 

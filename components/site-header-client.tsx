@@ -56,6 +56,18 @@ export function SiteHeaderClient({ email, signOutSlot }: Props) {
             Scripture
           </Link>
           <Link
+            href="/tools"
+            className="rounded-full px-3 py-2 text-sm text-[oklch(0.35_0.04_255)] transition hover:bg-[oklch(0.94_0.02_85)]"
+          >
+            Tools
+          </Link>
+          <Link
+            href="/guides"
+            className="rounded-full px-3 py-2 text-sm text-[oklch(0.35_0.04_255)] transition hover:bg-[oklch(0.94_0.02_85)]"
+          >
+            Guides
+          </Link>
+          <Link
             href="/pricing"
             className="rounded-full px-3 py-2 text-sm text-[oklch(0.35_0.04_255)] transition hover:bg-[oklch(0.94_0.02_85)]"
           >
@@ -124,7 +136,8 @@ export function SiteHeaderClient({ email, signOutSlot }: Props) {
           <nav className="flex flex-col gap-1">
             {[
               { href: "/#features", label: "Features" },
-              { href: "/#scripture", label: "Scripture" },
+              { href: "/tools", label: "Tools" },
+              { href: "/guides", label: "Guides" },
               { href: "/pricing", label: "Pricing" },
               ...(email
                 ? [{ href: "/app", label: "Open app" }]

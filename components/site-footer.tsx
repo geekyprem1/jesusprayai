@@ -54,6 +54,16 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/tools" className="inline-block py-1 hover:text-white">
+                Free tools
+              </Link>
+            </li>
+            <li>
+              <Link href="/guides" className="inline-block py-1 hover:text-white">
+                Guides
+              </Link>
+            </li>
+            <li>
               <Link href="/signup" className="inline-block py-1 hover:text-white">
                 Create free account
               </Link>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,40 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { JsonLd } from "@/components/seo/json-ld";
+import { FaqSection } from "@/components/seo/faq-section";
+import { faqPageJsonLd } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "Pricing — Free Prayer Journal & Premium AI",
+  description:
+    "PrayNote free vs Premium: private Christian prayer journal, Bible reader, AI reflections, unlimited entries, and verse story sharing.",
+  alternates: { canonical: "/pricing" },
+  openGraph: {
+    title: "PrayNote Pricing — Free & Premium",
+    description:
+      "Start free. Unlock AI reflections, unlimited journal, and verse stories when ready.",
+    url: "/pricing",
+  },
+};
+
+const pricingFaqs = [
+  {
+    question: "Is PrayNote really free?",
+    answer:
+      "Yes. The Free plan includes core journaling, a Bible reader, and starter limits with no credit card. Premium unlocks unlimited entries and AI features when checkout ships.",
+  },
+  {
+    question: "What do I get on Free vs Premium?",
+    answer:
+      "Free covers prayer entries (limited), saved verses, basic reminders, and Bible reading. Premium adds unlimited prayers and verses, AI reflections, analytics, weekly summary, PDF export, and premium story sharing.",
+  },
+  {
+    question: "Can I cancel Premium anytime?",
+    answer:
+      "When Premium checkout is live via Lemon Squeezy, you will manage billing there. Until then, Free remains available.",
+  },
+];
 
 const tiers = [
   {
@@ -48,18 +83,13 @@ const tiers = [
   },
 ];
 
-export const metadata = {
-  title: "Pricing",
-  description:
-    "PrayNote free vs Premium — AI reflections, unlimited journal, story sharing.",
-};
-
 export default function PricingPage() {
   return (
     <div className="mx-auto max-w-4xl px-3 py-10 sm:px-4 sm:py-16">
+      <JsonLd data={faqPageJsonLd(pricingFaqs)} />
       <div className="mb-8 text-center sm:mb-10">
         <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-          Free to start. Premium to go deeper.
+          Free prayer journal. Premium AI when you are ready.
         </h1>
         <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
           Build the habit free. Unlock AI reflections, unlimited journal, and
@@ -120,6 +150,8 @@ export default function PricingPage() {
         Payments via Lemon Squeezy shipping next. Annual plan and church seats
         planned later.
       </p>
+
+      <FaqSection faqs={pricingFaqs} />
     </div>
   );
 }

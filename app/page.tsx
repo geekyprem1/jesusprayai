@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,6 +10,49 @@ import {
   Shield,
   Sparkles,
 } from "lucide-react";
+import { JsonLd } from "@/components/seo/json-ld";
+import { FaqSection } from "@/components/seo/faq-section";
+import {
+  faqPageJsonLd,
+  organizationJsonLd,
+  softwareApplicationJsonLd,
+} from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "Private AI Prayer Journal with Scripture",
+  description:
+    "PrayNote AI is a private Christian prayer journal with Scripture suggestions, answered prayer tracking, and verse cards. Free to start — from Eternal Faith.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "PrayNote AI — Private AI Prayer Journal with Scripture",
+    description:
+      "Write prayers, meet Scripture, track answered prayer, and share verse cards. Free Christian prayer journal.",
+    url: "/",
+  },
+};
+
+const homeFaqs = [
+  {
+    question: "What is PrayNote AI?",
+    answer:
+      "PrayNote AI is a private AI-powered Christian prayer journal and Bible companion by Eternal Faith. You write prayers, receive gentle Scripture suggestions, track answered prayer, and share verse cards — without sharing private prayers.",
+  },
+  {
+    question: "Is PrayNote free?",
+    answer:
+      "Yes. You can start free with no credit card. Free includes core journaling, Bible reading, and essential limits. Premium AI features are listed on the pricing page.",
+  },
+  {
+    question: "Are my prayers private?",
+    answer:
+      "PrayNote is designed as a journal, not a public social feed. You can share beautiful verse cards while keeping your personal prayers private.",
+  },
+  {
+    question: "Do I need an account for free tools?",
+    answer:
+      "No. Bible verses by topic, the random verse tool, and prayer prompts work without signup. Create an account when you want a lasting private journal.",
+  },
+];
 
 const features = [
   {
@@ -58,6 +102,13 @@ const steps = [
 export default function HomePage() {
   return (
     <div className="marketing-gradient flex flex-col overflow-hidden">
+      <JsonLd
+        data={[
+          organizationJsonLd(),
+          softwareApplicationJsonLd(),
+          faqPageJsonLd(homeFaqs),
+        ]}
+      />
       {/* HERO */}
       <section className="relative mx-auto grid w-full max-w-6xl items-center gap-8 px-3 py-10 sm:gap-10 sm:px-4 sm:py-14 md:grid-cols-2 md:py-20 lg:gap-14">
         <div
@@ -100,17 +151,16 @@ export default function HomePage() {
           </p>
 
           <h1 className="font-display animate-faith-up delay-200 max-w-xl text-[1.85rem] leading-[1.15] font-semibold tracking-tight text-[oklch(0.24_0.05_255)] xs:text-4xl sm:text-5xl lg:text-[3.25rem]">
-            Your private prayer journal —{" "}
+            Private AI prayer journal{" "}
             <span className="italic text-[oklch(0.42_0.07_255)]">
               with Scripture
-            </span>{" "}
-            that meets you
+            </span>
           </h1>
 
           <p className="animate-faith-up delay-300 mt-4 max-w-lg text-sm leading-relaxed text-[oklch(0.4_0.03_255)] sm:mt-5 sm:text-base md:text-lg">
-            Write what&apos;s on your heart. See Bible verses that speak to your
-            prayer. Share a verse with someone who needs hope — without sharing
-            your private prayers.
+            PrayNote is a Christian prayer journal that helps you write what is
+            on your heart, meet Bible verses that speak to your prayer, track
+            answered prayer, and share hope — without sharing private prayers.
           </p>
 
           <div className="animate-faith-up delay-400 mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
@@ -294,6 +344,64 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* FREE TOOLS */}
+      <section className="mx-auto w-full max-w-6xl px-3 py-12 sm:px-4 sm:py-16">
+        <div className="mx-auto mb-8 max-w-2xl text-center">
+          <p className="mb-2 text-[10px] font-medium tracking-[0.2em] text-[oklch(0.55_0.08_85)] uppercase sm:text-xs">
+            Free · No signup
+          </p>
+          <h2 className="font-display text-2xl font-semibold text-[oklch(0.24_0.05_255)] sm:text-3xl">
+            Tools for quiet time
+          </h2>
+          <p className="mt-3 text-sm text-[oklch(0.42_0.03_255)] sm:text-base">
+            Use these without an account. Create a journal when you are ready
+            to keep a lasting record.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            {
+              href: "/tools/verses-for",
+              title: "Verses by topic",
+              text: "Anxiety, healing, strength, hope, and more.",
+            },
+            {
+              href: "/tools/random-verse",
+              title: "Random Bible verse",
+              text: "A fresh verse for prayer or encouragement.",
+            },
+            {
+              href: "/tools/prayer-prompts",
+              title: "Prayer prompts",
+              text: "Gratitude, confession, intercession, ACTS.",
+            },
+          ].map((tool) => (
+            <Link
+              key={tool.href}
+              href={tool.href}
+              className="rounded-2xl border border-[oklch(0.88_0.02_85)] bg-white/80 p-5 transition hover:border-[oklch(0.72_0.1_85/0.5)] hover:shadow-sm"
+            >
+              <h3 className="font-display text-lg font-semibold text-[oklch(0.24_0.05_255)]">
+                {tool.title}
+              </h3>
+              <p className="mt-1.5 text-sm text-[oklch(0.42_0.03_255)]">
+                {tool.text}
+              </p>
+            </Link>
+          ))}
+        </div>
+        <p className="mt-6 text-center text-sm">
+          <Link
+            href="/guides"
+            className="font-medium text-[oklch(0.32_0.06_255)] underline-offset-2 hover:underline"
+          >
+            Read prayer &amp; Scripture guides →
+          </Link>
+        </p>
+      </section>
+
+      <FaqSection faqs={homeFaqs} />
 
       {/* FINAL CTA */}
       <section className="relative overflow-hidden px-3 pb-14 sm:px-4 sm:pb-20">
