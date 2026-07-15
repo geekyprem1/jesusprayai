@@ -4,18 +4,33 @@ export type VerseSharePayload = {
   translation?: string;
 };
 
-/** Story / feed formats for social platforms */
+/** Story, feed, pin, and phone formats for Scripture images. */
 export type VerseCardFormat =
+  | "square" // 1:1 — IG / FB feed
   | "story" // 9:16 — IG Story, FB Story, WA Status
   | "portrait" // 4:5 — IG feed / general
-  | "pin"; // 2:3 — Pinterest
+  | "pin" // 2:3 — Pinterest
+  | "wallpaper"; // 9:16 high-resolution phone lock screen
 
-const FORMAT_SIZE: Record<VerseCardFormat, { w: number; h: number; label: string }> =
-  {
-    story: { w: 1080, h: 1920, label: "Story 9:16" },
-    portrait: { w: 1080, h: 1350, label: "Portrait 4:5" },
-    pin: { w: 1000, h: 1500, label: "Pinterest 2:3" },
-  };
+export type VerseCardDimensions = {
+  width: number;
+  height: number;
+  label: string;
+};
+
+const FORMAT_SIZE: Record<VerseCardFormat, VerseCardDimensions> = {
+  square: { width: 1080, height: 1080, label: "Square 1:1" },
+  story: { width: 1080, height: 1920, label: "Story 9:16" },
+  portrait: { width: 1080, height: 1350, label: "Portrait 4:5" },
+  pin: { width: 1000, height: 1500, label: "Pinterest 2:3" },
+  wallpaper: { width: 1440, height: 2560, label: "Phone wallpaper 9:16" },
+};
+
+export function getVerseCardDimensions(
+  format: VerseCardFormat
+): VerseCardDimensions {
+  return FORMAT_SIZE[format];
+}
 
 export function formatLabel(format: VerseCardFormat): string {
   return FORMAT_SIZE[format].label;
@@ -90,7 +105,7 @@ export async function renderVerseCardPng(
   verse: VerseSharePayload,
   format: VerseCardFormat = "story"
 ): Promise<Blob> {
-  const { w: W, h: H } = FORMAT_SIZE[format];
+  const { width: W, height: H } = FORMAT_SIZE[format];
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
@@ -146,7 +161,8 @@ export async function renderVerseCardPng(
 
   const maxTextWidth = W - pad * 3.2;
   let lines = wrapText(ctx, quote, maxTextWidth);
-  const maxLines = format === "story" ? 16 : 12;
+  const maxLines =
+    format === "story" || format === "wallpaper" ? 16 : 12;
   while (lines.length > maxLines && fontSize > Math.round(W * 0.026)) {
     fontSize -= 2;
     ctx.font = `italic ${fontSize}px Georgia, 'Times New Roman', serif`;
@@ -197,7 +213,8 @@ export function downloadBlob(blob: Blob, filename: string) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  // A short delay keeps Safari/iOS downloads alive long enough to start.
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
 export function safeFilename(

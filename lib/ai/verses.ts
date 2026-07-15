@@ -71,7 +71,7 @@ export async function resolveVerseSuggestions(
   translation: "KJV" | "NIV" | "ESV" = "KJV",
   supabase?: SupabaseClient
 ): Promise<ResolvedVerse[]> {
-  let suggest = await suggestVerseReferences(bodyPlain);
+  const suggest = await suggestVerseReferences(bodyPlain);
 
   // Optional cache by topics (after we know topics)
   if (supabase && suggest.topics.length) {

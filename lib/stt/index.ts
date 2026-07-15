@@ -30,11 +30,6 @@ export function isWhisperConfigured(): boolean {
 /** What the server can offer for voice. */
 export function getVoiceCapabilities() {
   const provider = getSttProvider();
-  const whisper =
-    isWhisperConfigured() &&
-    (provider === "openai_whisper" ||
-      provider === "auto" ||
-      (provider !== "browser" && provider !== "none" && isWhisperConfigured()));
 
   return {
     whisper: Boolean(

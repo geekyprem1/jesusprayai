@@ -18,7 +18,7 @@ export async function sendReminderNotification(
 ): Promise<{ emailed: boolean; pushed: boolean; notes: string[] }> {
   const notes: string[] = [];
   let emailed = false;
-  let pushed = false;
+  const pushed = false;
 
   const wantEmail =
     payload.channel === "email" || payload.channel === "both";

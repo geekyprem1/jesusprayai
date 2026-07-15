@@ -10,6 +10,7 @@ import {
   Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BRAND } from "@/lib/brand";
 import {
   buildVerseShareText,
   downloadBlob,
@@ -150,7 +151,7 @@ export function ShareVerseButton({
 
   function openFacebook() {
     setError(null);
-    const origin = appOrigin() || "https://praynote.app";
+    const origin = appOrigin() || BRAND.siteUrl;
     window.open(
       facebookShareUrl(origin, text()),
       "_blank",
@@ -160,7 +161,7 @@ export function ShareVerseButton({
 
   function openPinterest() {
     setError(null);
-    const origin = appOrigin() || "https://praynote.app";
+    const origin = appOrigin() || BRAND.siteUrl;
     window.open(
       pinterestShareUrl(origin, text()),
       "_blank",

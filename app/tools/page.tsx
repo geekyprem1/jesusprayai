@@ -4,37 +4,22 @@ import { ContentShell } from "@/components/seo/content-shell";
 import { SoftSignupCta } from "@/components/seo/soft-signup-cta";
 import { JsonLd } from "@/components/seo/json-ld";
 import { webPageJsonLd } from "@/lib/seo";
+import { TOOLS } from "@/lib/content/tools";
 
 export const metadata: Metadata = {
-  title: "Free Christian Tools — Verses, Prompts & More",
+  title: "Free Christian Tools — Quizzes, Wallpapers & Verses",
   description:
-    "Free PrayNote tools with no signup: Bible verses by topic, random verse generator, and Christian prayer prompts.",
+    "Free PrayNote tools with no signup: Bible character quiz, Bible verse wallpaper maker, verses by topic, random verse, and prayer prompts.",
   alternates: { canonical: "/tools" },
   openGraph: {
     title: "Free Christian Tools — PrayNote",
     description:
-      "Bible verses by topic, random verse, and prayer prompts. Free, no account required.",
+      "Take the Bible character quiz, create verse wallpapers, browse verses by topic, draw a random verse, and try prayer prompts. Free, no account required.",
     url: "/tools",
   },
 };
 
-const tools = [
-  {
-    href: "/tools/verses-for",
-    title: "Bible verses by topic",
-    text: "Anxiety, healing, strength, hope, gratitude, and more curated Scripture lists.",
-  },
-  {
-    href: "/tools/random-verse",
-    title: "Random Bible verse",
-    text: "Draw a verse for quiet time, then copy or download a shareable card.",
-  },
-  {
-    href: "/tools/prayer-prompts",
-    title: "Prayer prompt generator",
-    text: "Gratitude, confession, intercession, praise, and ACTS starters — no blank page.",
-  },
-];
+const tools = TOOLS;
 
 export default function ToolsIndexPage() {
   return (
@@ -43,7 +28,7 @@ export default function ToolsIndexPage() {
         data={webPageJsonLd({
           title: "Free Christian Tools",
           description:
-            "Free PrayNote tools: verses by topic, random verse, prayer prompts.",
+            "Free PrayNote tools: Bible character quiz, verse wallpaper maker, verses by topic, random verse, and prayer prompts.",
           path: "/tools",
         })}
       />
@@ -67,7 +52,7 @@ export default function ToolsIndexPage() {
                   {tool.title}
                 </span>
                 <p className="mt-1.5 text-sm text-[oklch(0.42_0.03_255)]">
-                  {tool.text}
+                  {tool.description}
                 </p>
               </Link>
             </li>

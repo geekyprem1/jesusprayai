@@ -17,6 +17,7 @@ import {
   organizationJsonLd,
   softwareApplicationJsonLd,
 } from "@/lib/seo";
+import { TOOLS } from "@/lib/content/tools";
 
 export const metadata: Metadata = {
   title: "Private AI Prayer Journal with Scripture",
@@ -359,34 +360,18 @@ export default function HomePage() {
             to keep a lasting record.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            {
-              href: "/tools/verses-for",
-              title: "Verses by topic",
-              text: "Anxiety, healing, strength, hope, and more.",
-            },
-            {
-              href: "/tools/random-verse",
-              title: "Random Bible verse",
-              text: "A fresh verse for prayer or encouragement.",
-            },
-            {
-              href: "/tools/prayer-prompts",
-              title: "Prayer prompts",
-              text: "Gratitude, confession, intercession, ACTS.",
-            },
-          ].map((tool) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {TOOLS.map((tool) => (
             <Link
               key={tool.href}
               href={tool.href}
               className="rounded-2xl border border-[oklch(0.88_0.02_85)] bg-white/80 p-5 transition hover:border-[oklch(0.72_0.1_85/0.5)] hover:shadow-sm"
             >
               <h3 className="font-display text-lg font-semibold text-[oklch(0.24_0.05_255)]">
-                {tool.title}
+                {tool.shortTitle}
               </h3>
               <p className="mt-1.5 text-sm text-[oklch(0.42_0.03_255)]">
-                {tool.text}
+                {tool.shortDescription}
               </p>
             </Link>
           ))}

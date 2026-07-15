@@ -57,7 +57,6 @@ export function VoicePrayerButton({ onTranscript, disabled }: Props) {
         /* ignore */
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function stopTimer() {

@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { Bookmark, Cloud, CloudOff, Sparkles, Trash2 } from "lucide-react";
 import { ShareVerseButton } from "@/components/verses/share-verse-button";
 import Link from "next/link";
@@ -92,6 +98,23 @@ function toViewFromLocal(e: LocalJournalEntry): JournalEntryView {
   };
 }
 
+function subscribeOnline(callback: () => void) {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
+}
+
+function getOnlineSnapshot() {
+  return navigator.onLine;
+}
+
+function getServerOnlineSnapshot() {
+  return true;
+}
+
 type Props = {
   cloudEnabled: boolean;
 };
@@ -99,7 +122,10 @@ type Props = {
 export function JournalWorkspace({ cloudEnabled }: Props) {
   const [entries, setEntries] = useState<JournalEntryView[]>([]);
   const [body, setBody] = useState("");
-  const [editBody, setEditBody] = useState("");
+  const [editDraft, setEditDraft] = useState<{
+    entryId: string;
+    body: string;
+  } | null>(null);
   const [mood, setMood] = useState<MoodId>("");
   const [draftCategory, setDraftCategory] =
     useState<PrayerCategory>("uncategorized");
@@ -109,15 +135,30 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
-  const [online, setOnline] = useState(true);
   const [mode, setMode] = useState<"cloud" | "local">("local");
-  const [verses, setVerses] = useState<EntryVerseRow[]>([]);
+  const [versesByEntry, setVersesByEntry] = useState<
+    Record<string, EntryVerseRow[]>
+  >({});
   const [quota, setQuota] = useState<PrayerEntryQuota | null>(null);
 
   const selected = useMemo(
     () => entries.find((e) => e.id === selectedId) ?? null,
     [entries, selectedId]
   );
+  const online = useSyncExternalStore(
+    subscribeOnline,
+    getOnlineSnapshot,
+    getServerOnlineSnapshot
+  );
+  const editBody = selected
+    ? editDraft?.entryId === selected.id
+      ? editDraft.body
+      : selected.body
+    : "";
+  const verses =
+    selected && mode === "cloud" && selected.syncState === "synced"
+      ? (versesByEntry[selected.id] ?? [])
+      : [];
 
   const draftStats = useMemo(() => wordStats(body), [body]);
   const editStats = useMemo(() => wordStats(editBody), [editBody]);
@@ -145,6 +186,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
 
   const loadCloud = useCallback(async () => {
     const result = await listPrayerEntries();
+    setEditDraft(null);
     if (!result.ok || !result.data) {
       setStatus(result.error ?? "Could not load cloud journal.");
       setMode("local");
@@ -166,15 +208,6 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
     );
     void refreshQuota();
   }, [refreshQuota]);
-
-  const loadVerses = useCallback(async (entryId: string) => {
-    const result = await listEntryVerses(entryId);
-    if (result.ok && result.data) {
-      setVerses(result.data);
-    } else {
-      setVerses([]);
-    }
-  }, []);
 
   const runAi = useCallback(
     async (entryId: string) => {
@@ -201,7 +234,13 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
             : e
         )
       );
-      setVerses(result.data?.verses ?? []);
+      setEditDraft((current) =>
+        current?.entryId === entryId ? null : current
+      );
+      setVersesByEntry((current) => ({
+        ...current,
+        [entryId]: result.data?.verses ?? [],
+      }));
       setStatus(
         warnings.length
           ? `Saved. AI partial: ${warnings.join("; ")}`
@@ -235,16 +274,14 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
   }, [cloudEnabled, loadCloud, runAi]);
 
   useEffect(() => {
-    setOnline(typeof navigator !== "undefined" ? navigator.onLine : true);
-
     async function init() {
       if (cloudEnabled && navigator.onLine) {
         await loadCloud();
         await syncPending();
       } else {
+        const drafts = await listDrafts();
         setMode("local");
         setEntries(loadEntries().map(toViewFromLocal));
-        const drafts = await listDrafts();
         if (drafts.length) {
           setStatus(
             `${drafts.filter((d) => d.syncState !== "synced").length} offline draft(s) waiting.`
@@ -257,17 +294,11 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
     void init();
 
     function onOnline() {
-      setOnline(true);
       void syncPending();
     }
-    function onOffline() {
-      setOnline(false);
-    }
     window.addEventListener("online", onOnline);
-    window.addEventListener("offline", onOffline);
     return () => {
       window.removeEventListener("online", onOnline);
-      window.removeEventListener("offline", onOffline);
     };
   }, [cloudEnabled, loadCloud, syncPending]);
 
@@ -285,17 +316,24 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
   }, [entries, hydrated, mode]);
 
   useEffect(() => {
-    if (selected) {
-      setEditBody(selected.body);
-      if (mode === "cloud" && selected.syncState === "synced") {
-        void loadVerses(selected.id);
-      } else {
-        setVerses([]);
-      }
-    } else {
-      setVerses([]);
+    if (!selected || mode !== "cloud" || selected.syncState !== "synced") {
+      return;
     }
-  }, [selected, mode, loadVerses]);
+
+    const entryId = selected.id;
+    let cancelled = false;
+    void listEntryVerses(entryId).then((result) => {
+      if (cancelled) return;
+      setVersesByEntry((current) => ({
+        ...current,
+        [entryId]: result.ok && result.data ? result.data : [],
+      }));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selected, mode]);
 
   function composeBodyWithMeta(raw: string) {
     const parts: string[] = [];
@@ -359,6 +397,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
       view.syncState = "pending";
       setEntries((prev) => [view, ...prev]);
       resetComposer();
+      setEditDraft(null);
       setSelectedId(view.id);
       setStatus(
         !cloudEnabled
@@ -404,6 +443,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
     await removeDraft(clientId);
     resetComposer();
     await loadCloud();
+    setEditDraft(null);
     setSelectedId(result.data.id);
     setStatus("Entry saved. Running AI…");
     setSaving(false);
@@ -442,6 +482,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
       );
       setStatus("Updated locally.");
     }
+    setEditDraft(null);
     setSaving(false);
   }
 
@@ -457,6 +498,7 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
         e.id === selected.id ? { ...e, category } : e
       )
     );
+    setEditDraft(null);
     setStatus("Category updated (your choice).");
   }
 
@@ -472,19 +514,32 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
       setEntries((prev) => prev.filter((e) => e.id !== id));
       await removeDraft(id).catch(() => undefined);
     }
-    if (selectedId === id) setSelectedId(null);
+    setVersesByEntry((current) => {
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+    if (selectedId === id) {
+      setEditDraft(null);
+      setSelectedId(null);
+    }
     void refreshQuota();
   }
 
   async function handleToggleVerse(verseId: string, saved: boolean) {
+    if (!selected) return;
+    const entryId = selected.id;
     const result = await saveEntryVerse(verseId, saved);
     if (!result.ok) {
       setStatus(result.error ?? "Could not update verse.");
       return;
     }
-    setVerses((prev) =>
-      prev.map((v) => (v.id === verseId ? { ...v, saved } : v))
-    );
+    setVersesByEntry((current) => ({
+      ...current,
+      [entryId]: (current[entryId] ?? []).map((verse) =>
+        verse.id === verseId ? { ...verse, saved } : verse
+      ),
+    }));
   }
 
   return (
@@ -711,7 +766,9 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
 
               <textarea
                 value={editBody}
-                onChange={(e) => setEditBody(e.target.value)}
+                onChange={(e) =>
+                  setEditDraft({ entryId: selected.id, body: e.target.value })
+                }
                 rows={6}
                 className="min-h-[140px] w-full resize-y rounded-lg border border-input bg-transparent px-3 py-3 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:text-sm"
               />
@@ -834,7 +891,10 @@ export function JournalWorkspace({ cloudEnabled }: Props) {
                 <button
                   type="button"
                   className="w-full min-h-0 text-left"
-                  onClick={() => setSelectedId(entry.id)}
+                  onClick={() => {
+                    setEditDraft(null);
+                    setSelectedId(entry.id);
+                  }}
                 >
                   <p className="line-clamp-3 text-sm">{entry.body}</p>
                   <p className="mt-1 text-xs capitalize text-muted-foreground">

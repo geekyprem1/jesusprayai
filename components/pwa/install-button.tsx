@@ -26,10 +26,7 @@ export function InstallButton({ className }: { className?: string }) {
   const [hidden, setHidden] = useState(true);
 
   useEffect(() => {
-    if (isStandalone()) {
-      setHidden(true);
-      return;
-    }
+    if (isStandalone()) return;
 
     const onBip = (e: Event) => {
       e.preventDefault();

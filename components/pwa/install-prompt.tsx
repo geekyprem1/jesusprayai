@@ -44,10 +44,7 @@ export function InstallPrompt({ className }: { className?: string }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (isStandalone()) {
-      setInstalled(true);
-      return;
-    }
+    if (isStandalone()) return;
 
     try {
       if (sessionStorage.getItem(DISMISS_KEY) === "1") return;

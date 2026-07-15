@@ -41,7 +41,10 @@ export function RandomVerseTool() {
   );
 
   useEffect(() => {
-    setVerse(pickRandom(pool));
+    const id = window.setTimeout(() => {
+      setVerse(pickRandom(pool));
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [pool]);
 
   const another = useCallback(() => {

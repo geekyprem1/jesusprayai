@@ -3,6 +3,7 @@ import { ContentShell } from "@/components/seo/content-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { FaqSection } from "@/components/seo/faq-section";
 import { RandomVerseTool } from "@/components/tools/random-verse-tool";
+import { RelatedTools } from "@/components/tools/related-tools";
 import { faqPageJsonLd, webPageJsonLd } from "@/lib/seo";
 
 const faqs = [
@@ -56,6 +57,7 @@ export default function RandomVersePage() {
         ]}
       >
         <RandomVerseTool />
+        <RelatedTools currentToolId="random-verse" />
       </ContentShell>
       <FaqSection faqs={faqs} />
     </>

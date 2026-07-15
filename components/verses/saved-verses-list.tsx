@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bookmark, BookOpen } from "lucide-react";
 import {
@@ -35,22 +35,24 @@ export function SavedVersesList() {
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    const result = await listSavedVerses();
-    if (!result.ok) {
-      setError(result.error ?? "Could not load saved verses.");
-      setVerses([]);
-    } else {
-      setError(null);
-      setVerses(result.data ?? []);
-    }
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
-    void load();
-  }, [load]);
+    let cancelled = false;
+    void listSavedVerses().then((result) => {
+      if (cancelled) return;
+      if (!result.ok) {
+        setError(result.error ?? "Could not load saved verses.");
+        setVerses([]);
+      } else {
+        setError(null);
+        setVerses(result.data ?? []);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function unsave(id: string) {
     setBusyId(id);

@@ -4,6 +4,7 @@ import { ContentShell } from "@/components/seo/content-shell";
 import { SoftSignupCta } from "@/components/seo/soft-signup-cta";
 import { JsonLd } from "@/components/seo/json-ld";
 import { FaqSection } from "@/components/seo/faq-section";
+import { RelatedTools } from "@/components/tools/related-tools";
 import { VERSE_TOPICS } from "@/lib/content/verses-by-topic";
 import { faqPageJsonLd, webPageJsonLd } from "@/lib/seo";
 
@@ -80,6 +81,7 @@ export default function VersesForIndexPage() {
           ))}
         </ul>
 
+        <RelatedTools currentToolId="verses-by-topic" />
         <SoftSignupCta source="tools-verses-index" />
       </ContentShell>
       <FaqSection faqs={faqs} />

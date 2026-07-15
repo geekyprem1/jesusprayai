@@ -38,15 +38,12 @@ export function LoadingScreen({
   const [visible, setVisible] = useState(delayMs <= 0);
 
   useEffect(() => {
-    if (delayMs <= 0) {
-      setVisible(true);
-      return;
-    }
+    if (delayMs <= 0) return;
     const id = window.setTimeout(() => setVisible(true), delayMs);
     return () => window.clearTimeout(id);
   }, [delayMs]);
 
-  if (!visible) {
+  if (delayMs > 0 && !visible) {
     return (
       <div
         aria-busy="true"

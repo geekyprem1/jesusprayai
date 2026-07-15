@@ -46,7 +46,6 @@ export function RequestsWorkspace() {
   const [reflection, setReflection] = useState("");
 
   const load = useCallback(async () => {
-    setLoading(true);
     const result = await listPrayerRequests({
       status: tab === "archive" ? "archive" : "all",
     });
@@ -66,8 +65,17 @@ export function RequestsWorkspace() {
   }, [tab]);
 
   useEffect(() => {
-    void load();
+    const id = window.setTimeout(() => {
+      void load();
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [load]);
+
+  function changeTab(nextTab: Tab) {
+    if (nextTab === tab) return;
+    setLoading(true);
+    setTab(nextTab);
+  }
 
   async function handleCreate() {
     const result = await createPrayerRequest({
@@ -83,6 +91,7 @@ export function RequestsWorkspace() {
     setDescription("");
     setCategory("other");
     setStatusMsg("Request added.");
+    setLoading(true);
     await load();
   }
 
@@ -97,6 +106,7 @@ export function RequestsWorkspace() {
       setStatusMsg(result.error ?? "Update failed");
       return;
     }
+    setLoading(true);
     await load();
   }
 
@@ -114,6 +124,7 @@ export function RequestsWorkspace() {
     setReflectionFor(null);
     setReflection("");
     setStatusMsg("Marked answered — God is faithful.");
+    setLoading(true);
     setTab("archive");
   }
 
@@ -125,7 +136,7 @@ export function RequestsWorkspace() {
           size="sm"
           className="w-full min-[400px]:w-auto"
           variant={tab === "active" ? "default" : "outline"}
-          onClick={() => setTab("active")}
+          onClick={() => changeTab("active")}
         >
           Active
         </Button>
@@ -134,7 +145,7 @@ export function RequestsWorkspace() {
           size="sm"
           className="w-full min-[400px]:w-auto"
           variant={tab === "archive" ? "default" : "outline"}
-          onClick={() => setTab("archive")}
+          onClick={() => changeTab("archive")}
         >
           Answered archive
         </Button>
@@ -288,7 +299,10 @@ export function RequestsWorkspace() {
                   type="button"
                   size="sm"
                   variant="ghost"
-                  onClick={() => void deletePrayerRequest(item.id).then(load)}
+                  onClick={() => {
+                    setLoading(true);
+                    void deletePrayerRequest(item.id).then(load);
+                  }}
                 >
                   Delete
                 </Button>

@@ -3,6 +3,7 @@ import { ContentShell } from "@/components/seo/content-shell";
 import { JsonLd } from "@/components/seo/json-ld";
 import { FaqSection } from "@/components/seo/faq-section";
 import { PrayerPromptsTool } from "@/components/tools/prayer-prompts-tool";
+import { RelatedTools } from "@/components/tools/related-tools";
 import { faqPageJsonLd, webPageJsonLd } from "@/lib/seo";
 
 const faqs = [
@@ -61,6 +62,7 @@ export default function PrayerPromptsPage() {
         ]}
       >
         <PrayerPromptsTool />
+        <RelatedTools currentToolId="prayer-prompts" />
       </ContentShell>
       <FaqSection faqs={faqs} />
     </>
